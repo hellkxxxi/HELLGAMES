@@ -41,7 +41,7 @@ const KICKS_I = {
 export const gravity = (level) => { const l = Math.min(level, 15); return Math.pow(0.8 - (l - 1) * 0.007, l - 1); };
 
 // ---------------------------------------------------------------- the rules (nothing is drawn in this part)
-export function createTetris(random = Math.random) {
+export function createHelltris(random = Math.random) {
   const grid = Array.from({ length: ROWS + HIDDEN }, () => new Array(COLS).fill(null));
   let bag = [], acc = 0, lockT = 0, resets = 0, lowest = 0;
   const s = { grid, cur: null, hold: null, canHold: true, queue: [], score: 0, lines: 0, level: 1, over: false, soft: false, clearing: null, locked: null };
@@ -155,12 +155,12 @@ const KEYS = {
 };
 
 export default {
-  id: 'tetris', name: 'Tetris', icon: 'blocks', color: '#c084fc', tag: 'Puzzle',
+  id: 'helltris', name: 'Helltris', icon: 'blocks', color: '#c084fc', tag: 'Puzzle',
   desc: 'Stack the falling blocks and clear full rows. It speeds up every ten lines.',
   help: 'Arrow keys: move, rotate, soft drop · Z rotates back · Space drops · C holds · P pauses',
   create(stage, api) {
     stage.innerHTML = `
-      <canvas class="tetris" id="tt-c"></canvas>
+      <canvas class="helltris" id="tt-c"></canvas>
       <div class="pad touch-only" id="tt-pad">
         <button data-a="left" aria-label="Move left"><i data-lucide="chevron-left"></i></button>
         <button data-a="right" aria-label="Move right"><i data-lucide="chevron-right"></i></button>
@@ -171,7 +171,7 @@ export default {
       </div>`;
     const cv = stage.querySelector('#tt-c'), ctx = cv.getContext('2d'), pad = stage.querySelector('#tt-pad');
     const font = getComputedStyle(document.body).fontFamily;
-    const game = createTetris();
+    const game = createHelltris();
     let W = 1, state = 'ready', endTimer = null;
     let shiftDir = 0, shiftT = 0, flash = 0, flashCells = null, shownScore = -1, shownLines = -1;
     const held = { left: false, right: false };
@@ -219,18 +219,18 @@ export default {
       for (const [x, y] of cells) block(ox + x * sz, oy + y * sz, sz, COLOR[type], alpha);
     }
     function label(text, x, y, c) {
-      ctx.fillStyle = '#71717a'; ctx.font = `600 ${c * 0.42}px ${font}`; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+      ctx.fillStyle = '#7e6e6d'; ctx.font = `600 ${c * 0.42}px ${font}`; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
       ctx.fillText(text, x, y);
     }
-    function panelBox(x, y, w, h, c) { ctx.fillStyle = '#151922'; rr(x, y, w, h, c * 0.4); ctx.fill(); }
+    function panelBox(x, y, w, h, c) { ctx.fillStyle = '#19100f'; rr(x, y, w, h, c * 0.4); ctx.fill(); }
 
     function draw() {
       const c = W / VW, bw = COLS * c, bh = ROWS * c;
       ctx.clearRect(0, 0, cv.width, cv.height);
       // the field
-      ctx.fillStyle = '#11141c'; rr(0, 0, bw, bh, c * 0.45); ctx.fill();
+      ctx.fillStyle = '#150d0d'; rr(0, 0, bw, bh, c * 0.45); ctx.fill();
       ctx.save(); rr(0, 0, bw, bh, c * 0.45); ctx.clip();
-      ctx.fillStyle = '#161a24';
+      ctx.fillStyle = '#1b1110';
       for (let x = 1; x < COLS; x++) ctx.fillRect(Math.round(x * c), 0, 1, bh);
       for (let y = 1; y < ROWS; y++) ctx.fillRect(0, Math.round(y * c), bw, 1);
       const clearing = game.clearing, p = clearing ? Math.min(1, clearing.t / CLEAR_TIME) : 0;
@@ -262,7 +262,7 @@ export default {
         for (const [x, y] of flashCells) { rr(x * c + 1, (y - HIDDEN) * c + 1, c - 2, c - 2, c * 0.17); ctx.fill(); }
       }
       ctx.restore();
-      ctx.strokeStyle = '#242a3a'; ctx.lineWidth = 1; rr(0.5, 0.5, bw - 1, bh - 1, c * 0.45); ctx.stroke();
+      ctx.strokeStyle = '#2b1b1a'; ctx.lineWidth = 1; rr(0.5, 0.5, bw - 1, bh - 1, c * 0.45); ctx.stroke();
 
       // the side panel: hold, next pieces, level and lines
       const px = bw + c * 0.5, pw = W - px, m = c * 0.74;
@@ -275,7 +275,7 @@ export default {
       [['LEVEL', game.level, 13.6], ['LINES', game.lines, 16.4]].forEach(([name, value, y]) => {
         label(name, px + c * 0.1, c * (y + 0.02), c);
         panelBox(px, c * (y + 0.3), pw, c * 1.7, c);
-        ctx.fillStyle = '#f4f4f5'; ctx.font = `700 ${c * 0.84}px ${font}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#f6f4f3'; ctx.font = `700 ${c * 0.84}px ${font}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillText(String(value), px + pw / 2, c * (y + 1.2));
       });
     }
@@ -319,7 +319,7 @@ export default {
 
     const stopFit = fitCanvas(cv, (w) => { W = w; draw(); });
     const stopLoop = loop(frame);
-    api.overlay({ title: 'Tetris', text: 'Arrows move and rotate, Space drops, C holds a piece.', icon: 'play', button: 'Start', onClick: begin });
+    api.overlay({ title: 'Helltris', text: 'Arrows move and rotate, Space drops, C holds a piece.', icon: 'play', button: 'Start', onClick: begin });
 
     return {
       key(e) {

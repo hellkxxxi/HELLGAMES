@@ -4,8 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>hellgames by hellkai</title>
-<meta name="description" content="Free browser mini-games you can play instantly: Aim Trainer, Key Mania, Tetris, Pac-Man, Flappy Bird, Lines 98, Sudoku, Snake, 2048, Minesweeper and more.">
-<meta name="theme-color" content="#0b0d12">
+<meta name="description" content="Free browser mini-games you can play instantly: Aim Trainer, Key Mania, Helltype, Helltris, Hell-Man, Helly Bird, Lines 98, Sudoku, Snake, 2048, Minesweeper and more.">
+<meta name="theme-color" content="#0a0606">
+<link rel="canonical" href="https://hellkxxxi.github.io/hellgames/">
+
+<!-- What messengers and social networks show when somebody shares the link.
+     These addresses have to be complete, so change them if the site moves to another address. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="hellgames">
+<meta property="og:title" content="hellgames by hellkai">
+<meta property="og:description" content="Fifteen free mini-games that start in one click: aim trainer, rhythm, typing, puzzles and arcade. No installs, no ads, no sign-up.">
+<meta property="og:url" content="https://hellkxxxi.github.io/hellgames/">
+<meta property="og:image" content="https://hellkxxxi.github.io/hellgames/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="hellgames by hellkai: fifteen free browser mini-games">
+<meta name="twitter:card" content="summary_large_image">
+
 <link rel="stylesheet" href="styles.css">
 <!-- tailwind.css is a pre-generated file and has to stay AFTER styles.css (see README) -->
 <link rel="stylesheet" href="tailwind.css">
@@ -15,19 +30,25 @@
 <link rel="apple-touch-icon" href="icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="hellgames">
 </head>
 <body class="antialiased">
 <div id="app" class="min-h-screen flex flex-col">
-  <header class="sticky top-0 z-20 border-b border-white/5 bg-[#0b0d12]/90 backdrop-blur">
+  <header class="site-header sticky top-0 z-20">
     <div class="max-w-5xl mx-auto px-4 h-14 flex items-center gap-3">
       <a href="#" class="flex items-center gap-2.5 font-semibold tracking-tight">
         <img src="icon.png" alt="" class="w-7 h-7 rounded-lg object-cover">
-        <span>hellgames <span class="brand-by">by hellkai</span></span>
+        <span><span class="brand-hell">hell</span>games <span class="brand-by">by hellkai</span></span>
       </a>
-      <div class="ml-auto text-xs text-zinc-500 hidden sm:flex items-center gap-1.5">
-        <i data-lucide="zap" class="w-3.5 h-3.5"></i> Instant play · no installs
+      <div class="ml-auto flex items-center gap-3">
+        <div class="dim text-xs hidden sm:flex items-center gap-1.5">
+          <i data-lucide="flame" class="w-3.5 h-3.5"></i> Instant play · no installs
+        </div>
+        <a href="https://github.com/hellkxxxi/hellgames" target="_blank" rel="noopener" class="btn-icon" aria-label="hellgames on GitHub" title="Source code on GitHub">
+          <!-- The GitHub mark, © GitHub, Inc. -->
+          <svg class="gh-mark" viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M6.766 11.328c-2.063-.25-3.516-1.734-3.516-3.656 0-.781.281-1.625.75-2.188-.203-.515-.172-1.609.063-2.062.625-.078 1.468.25 1.968.703.594-.187 1.219-.281 1.985-.281.765 0 1.39.094 1.953.265.484-.437 1.344-.765 1.969-.687.218.422.25 1.515.046 2.047.5.593.766 1.39.766 2.203 0 1.922-1.453 3.375-3.547 3.64.531.344.89 1.094.89 1.954v1.625c0 .468.391.734.86.547C13.781 14.359 16 11.53 16 8.03 16 3.61 12.406 0 7.984 0 3.563 0 0 3.61 0 8.031a7.88 7.88 0 0 0 5.172 7.422c.422.156.828-.125.828-.547v-1.25c-.219.094-.5.156-.75.156-1.031 0-1.64-.562-2.078-1.609-.172-.422-.36-.672-.719-.719-.187-.015-.25-.093-.25-.187 0-.188.313-.328.625-.328.453 0 .844.281 1.25.86.313.452.64.655 1.031.655s.641-.14 1-.5c.266-.265.47-.5.657-.656"/></svg>
+        </a>
       </div>
     </div>
   </header>
@@ -35,8 +56,13 @@
   <main class="flex-1">
     <section id="home" class="max-w-5xl mx-auto px-4 py-8">
       <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight">Pick a game</h1>
-      <p class="text-zinc-400 mt-1 text-sm">Quick rounds that work with a keyboard or touch. Your best scores are saved on this device.</p>
+      <p class="muted mt-1 text-sm">Quick rounds that work with a keyboard or touch. Your best scores are saved on this device.</p>
       <div id="grid" class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+      <footer class="site-footer">
+        <span>hellgames <span id="version"></span></span>
+        <a href="https://github.com/hellkxxxi/hellgames" target="_blank" rel="noopener"><i data-lucide="code-xml"></i>Source code on GitHub</a>
+        <span>Free and open source</span>
+      </footer>
     </section>
 
     <section id="play" class="hidden max-w-3xl mx-auto px-4 py-4">
@@ -44,7 +70,7 @@
         <a href="#" class="btn-icon" aria-label="Back to games" title="Back (Esc)"><i data-lucide="arrow-left"></i></a>
         <div class="min-w-0 flex-1">
           <h2 id="g-title" class="font-semibold text-base sm:text-lg leading-tight truncate"></h2>
-          <p id="g-status" class="text-xs text-zinc-400 truncate h-4"></p>
+          <p id="g-status" class="muted text-xs truncate h-4"></p>
         </div>
         <div class="stat"><span id="g-score-label">Score</span><b id="g-score">0</b></div>
         <div class="stat"><span>Best</span><b id="g-best">–</b></div>
@@ -57,12 +83,12 @@
           <div class="overlay-card">
             <div id="ov-icon" class="ov-icon"></div>
             <h3 id="ov-title" class="text-xl font-semibold tracking-tight"></h3>
-            <p id="ov-text" class="text-sm text-zinc-400 mt-1"></p>
+            <p id="ov-text" class="muted text-sm mt-1"></p>
             <button id="ov-btn" class="btn-primary mt-5"></button>
           </div>
         </div>
       </div>
-      <p id="g-help" class="text-center text-xs text-zinc-500 mt-5"></p>
+      <p id="g-help" class="dim text-center text-xs mt-5"></p>
     </section>
   </main>
 </div>

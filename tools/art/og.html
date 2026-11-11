@@ -1,0 +1,57 @@
+<!doctype html>
+<!-- The picture messengers show when somebody shares the link to the site (1200 x 630).
+     Rendered to ../../og.png by `npm run art`. Edit the text here, then render it again. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { width: 1200px; height: 630px; overflow: hidden; position: relative; background: #0a0606; color: #f6f1ef;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Open Sans", sans-serif; }
+  .glow { position: absolute; inset: 0; background:
+    radial-gradient(70% 62% at 50% 118%, rgba(255,84,24,.50), rgba(170,20,10,.20) 52%, transparent 78%),
+    radial-gradient(34% 42% at 4% 112%, rgba(255,160,40,.20), transparent 70%),
+    radial-gradient(34% 42% at 96% 112%, rgba(255,50,20,.22), transparent 70%); }
+  .ember { position: absolute; border-radius: 50%; background: #ffb347; box-shadow: 0 0 12px 2px rgba(255,120,40,.8); }
+  .frame { position: absolute; inset: 0; border: 1px solid rgba(255,90,42,.22); }
+  .wrap { position: absolute; inset: 0; padding: 56px 80px 0; }
+  .top { display: flex; align-items: center; gap: 44px; }
+  .icon { flex: none; width: 196px; height: 196px; border-radius: 44px; box-shadow: 0 0 0 1px rgba(255,120,60,.30), 0 30px 80px -20px rgba(255,80,24,.75); }
+  h1 { font-size: 112px; line-height: 1; font-weight: 800; letter-spacing: -0.035em; }
+  h1 b { font-weight: 800; background: linear-gradient(180deg, #ffd27a, #ff5a2a 72%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .by { margin-top: 12px; font-size: 34px; color: #aca09f; letter-spacing: -0.01em; }
+  .by b { color: #f6f1ef; font-weight: 600; }
+  .line { margin-top: 40px; font-size: 38px; font-weight: 600; letter-spacing: -0.015em; }
+  .line span { color: #ffb347; }
+  .sub { margin-top: 8px; font-size: 25px; color: #aca09f; }
+  .chips { position: absolute; left: 80px; right: 70px; bottom: 50px; display: flex; flex-wrap: wrap; gap: 12px 10px; }
+  .chips span { padding: 8px 17px 9px; font-size: 20px; font-weight: 500; white-space: nowrap; color: #eadfdd; border-radius: 999px; border: 1px solid rgba(255,120,70,.32); background: rgba(23,14,14,.78); }
+  .chips .hot { color: #ffd9b0; border-color: rgba(255,120,60,.75); background: rgba(120,30,10,.55); }
+</style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="ember" style="left:1010px; top:92px; width:5px; height:5px; opacity:.8"></div>
+  <div class="ember" style="left:1104px; top:210px; width:4px; height:4px; opacity:.6"></div>
+  <div class="ember" style="left:934px; top:262px; width:3px; height:3px; opacity:.55"></div>
+  <div class="ember" style="left:1062px; top:330px; width:6px; height:6px; opacity:.75"></div>
+  <div class="ember" style="left:1140px; top:60px; width:3px; height:3px; opacity:.5"></div>
+  <div class="ember" style="left:40px; top:330px; width:4px; height:4px; opacity:.55"></div>
+  <div class="ember" style="left:968px; top:150px; width:3px; height:3px; opacity:.45"></div>
+  <div class="wrap">
+    <div class="top">
+      <img class="icon" src="icon.svg" alt="">
+      <div>
+        <h1><b>hell</b>games</h1>
+        <p class="by">by <b>hellkai</b></p>
+      </div>
+    </div>
+    <p class="line"><span>15 free mini-games</span> that start in one click</p>
+    <p class="sub">No installs · no ads · no sign-up · works offline</p>
+  </div>
+  <div class="chips">
+    <span>Aim Trainer</span><span>Key Mania</span><span class="hot">Helltype</span><span class="hot">Helltris</span><span class="hot">Hell-Man</span><span class="hot">Helly Bird</span><span>Lines 98</span>
+    <span>Sudoku</span><span>Sketchpad</span><span>Snake</span><span>2048</span><span>Minesweeper</span><span>Memory Match</span><span>Reaction Test</span><span>Whack-a-Mole</span>
+  </div>
+</body>
+</html>

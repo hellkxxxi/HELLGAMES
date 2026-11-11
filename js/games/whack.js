@@ -1,16 +1,25 @@
 import { randInt } from '../util.js';
 
 const DURATION = 30000;
-const CRITTER = `<svg viewBox="0 0 100 100"><path d="M10 100 C10 40 25 18 50 18 C75 18 90 40 90 100Z" fill="#a16207"/>
-<ellipse cx="50" cy="70" rx="24" ry="22" fill="#ca8a04"/><circle cx="38" cy="45" r="6" fill="#1c1917"/><circle cx="62" cy="45" r="6" fill="#1c1917"/>
-<circle cx="40" cy="43" r="2" fill="#fff"/><circle cx="64" cy="43" r="2" fill="#fff"/><ellipse cx="50" cy="57" rx="7" ry="5" fill="#f472b6"/>
-<rect x="45" y="62" width="10" height="9" rx="2" fill="#fafaf9"/></svg>`;
+// The critter is a little devil: head and shoulders, drawn as an SVG that rises out of a lava pit.
+const CRITTER = `<svg viewBox="0 0 100 100" stroke="#3b0a0a" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">
+<path d="M8 104 C8 80 20 67 34 63 L66 63 C80 67 92 80 92 104Z" fill="#b91c1c"/>
+<path d="M23 38 L3 27 L19 55Z M77 38 L97 27 L81 55Z" fill="#dc2626"/>
+<path d="M27 25 C20 17 20 8 26 1 C28 10 35 15 43 18Z M73 25 C80 17 80 8 74 1 C72 10 65 15 57 18Z" fill="#fde68a"/>
+<ellipse cx="50" cy="45" rx="31" ry="29" fill="#ef4444"/>
+<ellipse cx="38" cy="26" rx="9" ry="4.5" transform="rotate(-18 38 26)" fill="#f87171" stroke="none"/>
+<g class="eyes"><ellipse cx="38" cy="45" rx="8" ry="9" fill="#fff7ed"/><ellipse cx="62" cy="45" rx="8" ry="9" fill="#fff7ed"/>
+<circle cx="40.5" cy="46" r="3.6" fill="#18090a" stroke="none"/><circle cx="59.5" cy="46" r="3.6" fill="#18090a" stroke="none"/></g>
+<path class="eyes-hit" d="M32 39 L44 51 M44 39 L32 51 M56 39 L68 51 M68 39 L56 51" fill="none" stroke-width="3.4"/>
+<path d="M25 32 L45 38 M75 32 L55 38" fill="none" stroke-width="3.6"/>
+<path d="M33 58 Q50 77 67 58 Q50 65 33 58Z" fill="#450a0a"/>
+<path d="M39 61.5 L44.5 63 L42 68.5Z M61 61.5 L55.5 63 L58 68.5Z" fill="#fff7ed" stroke-width="1.2"/></svg>`;
 const KEYMAP = '789456123';
 
 export default {
   id: 'whack', name: 'Whack-a-Mole', icon: 'hammer', color: '#fb923c', tag: 'Reflex',
-  desc: 'Bop as many moles as you can in 30 seconds. They speed up.',
-  help: 'Click or tap moles · number keys 1–9 work too',
+  desc: 'Little devils pop out of the lava pits. Bop as many as you can in 30 seconds.',
+  help: 'Click or tap the devils · number keys 1–9 work too',
   create(stage, api) {
     stage.innerHTML = `<div class="timebar"><div id="tb" style="width:100%"></div></div>
       <div class="wgrid">${Array.from({ length: 9 }, (_, i) => `<div class="hole" data-i="${i}"><div class="critter">${CRITTER}</div></div>`).join('')}</div>`;
@@ -55,7 +64,7 @@ export default {
     }
 
     holes.forEach((h) => h.addEventListener('pointerdown', (e) => { e.preventDefault(); whack(h); }));
-    api.overlay({ title: 'Whack-a-Mole', text: '30 seconds. Hit every mole you see.', icon: 'hammer', button: 'Start', onClick: begin });
+    api.overlay({ title: 'Whack-a-Mole', text: '30 seconds. Smack every little devil you see.', icon: 'hammer', button: 'Start', onClick: begin });
     api.status('30s');
     return {
       key(e) { const k = KEYMAP.indexOf(e.key); if (k >= 0) { whack(holes[k]); return true; } },

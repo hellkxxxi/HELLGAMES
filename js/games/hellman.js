@@ -54,7 +54,7 @@ export const frightTime = (level) => Math.max(1.5, 7 - level); // seconds the gh
 // ---------------------------------------------------------------- the rules (nothing is drawn in this part)
 // Everybody moves from the middle of one tile to the middle of the next: x, y is the tile being left,
 // dx, dy the direction and t (0..1) how far along the way they are.
-export function createPacman(random = Math.random) {
+export function createHellman(random = Math.random) {
   const s = { tiles: [], pac: null, ghosts: [], want: null, phase: 'ready', phaseT: 0, score: 0, lives: 3, level: 1, dotsLeft: 0, dotsTotal: 0, mode: 'scatter', frightT: 0, fruit: 0, popups: [], time: 0 };
   let sp, modeIx, modeT, houseT, dotsEaten, combo, bonusGiven = false, afterDeath;
 
@@ -73,7 +73,7 @@ export function createPacman(random = Math.random) {
   }
   function loadLevel() {
     s.tiles = MAP.map((row) => row.split(''));
-    s.tiles[PAC_AT.y][PAC_AT.x] = ' '; // no dot under Pac-Man's starting place
+    s.tiles[PAC_AT.y][PAC_AT.x] = ' '; // no dot under Hell-Man's starting place
     s.dotsTotal = s.dotsLeft = s.tiles.flat().filter((c) => c === '.' || c === 'o').length;
     dotsEaten = 0; afterDeath = false; sp = speeds(s.level);
     placeActors();
@@ -131,7 +131,7 @@ export function createPacman(random = Math.random) {
     if (g.eyes) return DOOR;
     if (s.mode === 'scatter') return g.corner;
     const p = s.pac, f = p.face;
-    if (g.name === 'pinky') return { x: p.x + f.dx * 4, y: p.y + f.dy * 4 };          // aims ahead of Pac-Man
+    if (g.name === 'pinky') return { x: p.x + f.dx * 4, y: p.y + f.dy * 4 };          // aims ahead of Hell-Man
     if (g.name === 'inky') { const b = s.ghosts[0]; return { x: (p.x + f.dx * 2) * 2 - b.x, y: (p.y + f.dy * 2) * 2 - b.y }; } // pincer with Blinky
     if (g.name === 'clyde') return (g.x - p.x) ** 2 + (g.y - p.y) ** 2 > 36 ? p : g.corner; // loses his nerve up close
     return p;                                                                              // Blinky simply chases
@@ -209,7 +209,7 @@ export function createPacman(random = Math.random) {
     s.popups = s.popups.filter((p) => (p.t -= dt) > 0);
     s.pac.ox *= 0.82; s.pac.oy *= 0.82;
     if (s.phase === 'over') return;
-    if (s.phase !== 'play') { // a short break: get ready, ghost eaten, Pac-Man caught, level cleared
+    if (s.phase !== 'play') { // a short break: get ready, ghost eaten, Hell-Man caught, level cleared
       s.phaseT -= dt;
       if (s.phaseT > 0) return;
       if (s.phase === 'clear') { s.level++; loadLevel(); }
@@ -238,20 +238,20 @@ export function createPacman(random = Math.random) {
 
 // ---------------------------------------------------------------- the game on screen
 const KEYS = { ArrowUp: 'up', w: 'up', ArrowLeft: 'left', a: 'left', ArrowDown: 'down', s: 'down', ArrowRight: 'right', d: 'right' };
-const HUD = 1.4, BG = '#0a0c14', TAU = Math.PI * 2;
+const HUD = 1.4, BG = '#0e0908', TAU = Math.PI * 2;
 const FRUIT_COLORS = ['#ef4444', '#fb7185', '#fb923c', '#4ade80', '#a3e635', '#38bdf8', '#facc15', '#c084fc'];
 
 export default {
-  id: 'pacman', name: 'Pac-Man', icon: 'ghost', color: '#facc15', tag: 'Arcade',
+  id: 'hellman', name: 'Hell-Man', icon: 'ghost', color: '#facc15', tag: 'Arcade',
   desc: 'Clear the maze of dots and stay away from the four ghosts. Power pellets turn the tables.',
   help: 'Arrow keys / WASD or swipe to steer · P to pause',
   create(stage, api) {
     stage.innerHTML = `
-      <canvas class="pacman" id="pm-c"></canvas>
-      <div class="pm-swipe touch-only" id="pm-swipe"><i data-lucide="move"></i> Swipe here or on the maze</div>`;
-    const cv = stage.querySelector('#pm-c'), ctx = cv.getContext('2d'), zone = stage.querySelector('#pm-swipe');
+      <canvas class="hellman" id="hm-c"></canvas>
+      <div class="hm-swipe touch-only" id="hm-swipe"><i data-lucide="move"></i> Swipe here or on the maze</div>`;
+    const cv = stage.querySelector('#hm-c'), ctx = cv.getContext('2d'), zone = stage.querySelector('#hm-swipe');
     const font = getComputedStyle(document.body).fontFamily;
-    const game = createPacman();
+    const game = createHellman();
     let W = 1, ts = 1, walls = null, wallsLit = null;
     let state = 'intro', acc = 0, endTimer = null, shown = '';
 
@@ -358,7 +358,7 @@ export default {
         ctx.beginPath(); ctx.moveTo(lx, hy); ctx.arc(lx, hy, ts * 0.42, Math.PI * 1.2, Math.PI * 0.8 + TAU); ctx.closePath(); ctx.fill();
       }
       drawFruit(cv.width - ts * 0.8, hy, game.level, ts * 0.42);
-      ctx.font = `700 ${ts * 0.56}px ${font}`; ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#a1a1aa';
+      ctx.font = `700 ${ts * 0.56}px ${font}`; ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#aca09f';
       ctx.fillText(`LEVEL ${game.level}`, cv.width - ts * 1.5, hy + ts * 0.03);
     }
 
@@ -407,9 +407,9 @@ export default {
     window.addEventListener('blur', pause);
     document.addEventListener('visibilitychange', onHide);
 
-    const stopFit = fitCanvas(cv, (w) => { W = w; ts = W / COLS; walls = paintWalls('#2f5bea'); wallsLit = paintWalls('#e5e7eb'); draw(); });
+    const stopFit = fitCanvas(cv, (w) => { W = w; ts = W / COLS; walls = paintWalls('#d9361a'); wallsLit = paintWalls('#e5e7eb'); draw(); });
     const stopLoop = loop(frame);
-    api.overlay({ title: 'Pac-Man', text: 'Eat every dot. Steer with the arrow keys, WASD or by swiping.', icon: 'play', button: 'Start', onClick: () => { state = 'play'; } });
+    api.overlay({ title: 'Hell-Man', text: 'Eat every dot. Steer with the arrow keys, WASD or by swiping.', icon: 'play', button: 'Start', onClick: () => { state = 'play'; } });
 
     return {
       key(e) {

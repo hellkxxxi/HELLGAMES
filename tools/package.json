@@ -1,0 +1,22 @@
+{
+  "name": "hellgames-tools",
+  "private": true,
+  "type": "module",
+  "description": "Development tools for hellgames: a local server, the tests and the scripts that render the artwork. The site itself needs none of this.",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "serve": "node serve.mjs",
+    "test": "node test.mjs",
+    "art": "node art.mjs",
+    "css": "node css.mjs"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^25.17.0",
+    "tailwindcss": "3.4.19"
+  },
+  "optionalDependencies": {
+    "@sparticuz/chromium": "^153.0.0"
+  }
+}
