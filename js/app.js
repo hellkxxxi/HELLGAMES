@@ -1,9 +1,10 @@
 import { drawIcons } from './util.js';
 import aim from './games/aim.js';
 import mania from './games/mania.js';
-import tetris from './games/tetris.js';
-import pacman from './games/pacman.js';
-import flappy from './games/flappy.js';
+import helltype from './games/helltype.js';
+import helltris from './games/helltris.js';
+import hellman from './games/hellman.js';
+import hellybird from './games/hellybird.js';
 import lines from './games/lines.js';
 import sudoku from './games/sudoku.js';
 import draw from './games/draw.js';
@@ -15,14 +16,16 @@ import reaction from './games/reaction.js';
 import whack from './games/whack.js';
 
 const SITE = 'hellgames by hellkai';
+const VERSION = '1.0.0';
 // The games appear on the home page in this order.
-const games = [aim, mania, tetris, pacman, flappy, lines, sudoku, draw, snake, g2048, mines, memory, reaction, whack];
+const games = [aim, mania, helltype, helltris, hellman, hellybird, lines, sudoku, draw, snake, g2048, mines, memory, reaction, whack];
 const $ = (id) => document.getElementById(id);
 
 // Everything is saved on this device only. The "arcade:" prefix is the original one, kept so saved scores survive.
 const store = {
   get(k) { try { return localStorage.getItem('arcade:' + k); } catch { return null; } },
   set(k, v) { try { localStorage.setItem('arcade:' + k, String(v)); } catch {} },
+  remove(k) { try { localStorage.removeItem('arcade:' + k); } catch {} },
 };
 // A game with modes (g.variants = { id: 'Label', ... }) keeps a separate best score for each mode.
 const bestKey = (g, v) => 'best:' + g.id + (v ? ':' + v : '');
@@ -30,6 +33,15 @@ const best = {
   get(g, v) { const s = store.get(bestKey(g, v)); return s === null ? null : Number(s); },
   set(g, v, n) { store.set(bestKey(g, v), n); },
 };
+// Three games got new names in version 1.0. Scores saved under the old names move over once,
+// and links to the old addresses (#tetris and so on) still open the right game.
+const RENAMED = { tetris: 'helltris', pacman: 'hellman', flappy: 'hellybird' };
+for (const [from, to] of Object.entries(RENAMED)) {
+  const old = store.get('best:' + from);
+  if (old === null) continue;
+  if (store.get('best:' + to) === null) store.set('best:' + to, old);
+  store.remove('best:' + from);
+}
 const savedVariant = (g) => {
   if (!g.variants) return null;
   const v = store.get('variant:' + g.id);
@@ -101,7 +113,7 @@ const api = {
       icon: opts.icon || (record ? 'trophy' : 'flag'),
       button: 'Play again',
       onClick: start,
-      wait: 650,
+      wait: opts.wait ?? 650,
     });
   },
 };
@@ -121,7 +133,9 @@ function route() {
   if (inst && inst.destroy) inst.destroy();
   inst = null;
   hideOverlay();
-  const g = games.find((x) => x.id === location.hash.slice(1));
+  const id = location.hash.slice(1);
+  if (RENAMED[id]) { location.replace('#' + RENAMED[id]); return; }
+  const g = games.find((x) => x.id === id);
   current = g || null;
   variant = g ? savedVariant(g) : null;
   $('home').classList.toggle('hidden', !!g);
@@ -205,5 +219,15 @@ wrap.addEventListener('touchend', (e) => {
 });
 
 window.addEventListener('hashchange', route);
+$('version').textContent = 'v' + VERSION;
 route();
 drawIcons();
+
+// After the first visit the site also opens without a connection (see sw.js). The worker is handed the
+// list of files this page has just loaded, so that all of them are available offline straight away.
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').then(() => navigator.serviceWorker.ready).then((reg) => {
+    const urls = performance.getEntriesByType('resource').map((r) => r.name).filter((u) => u.startsWith(location.origin));
+    reg.active.postMessage({ keep: [location.href.split('#')[0], ...urls] });
+  }).catch(() => { /* no offline mode in this browser: the site works as usual */ });
+}

@@ -90,7 +90,7 @@ export default {
     }
 
     function draw() {
-      ctx.fillStyle = '#11141c'; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#150d0d'; ctx.fillRect(0, 0, W, H);
       ctx.strokeStyle = 'rgba(255,255,255,.035)'; ctx.lineWidth = dpr; ctx.beginPath();
       const step = 44 * dpr;
       for (let x = (W % step) / 2; x < W; x += step) { ctx.moveTo(x, 0); ctx.lineTo(x, H); }

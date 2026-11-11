@@ -21,7 +21,7 @@ export default {
     }
     const avg = () => times.reduce((a, b) => a + b, 0) / times.length;
 
-    function idle() { state = 'idle'; view('#151922', '#f4f4f5', 'zap', 'Reaction Test', 'Click anywhere to start'); }
+    function idle() { state = 'idle'; view('#19100f', '#f6f4f3', 'zap', 'Reaction Test', 'Click anywhere to start'); }
     function wait() {
       state = 'wait';
       view('#7f1d1d', '#fee2e2', 'hourglass', 'Wait for green…', 'Don’t click yet');
@@ -42,12 +42,12 @@ export default {
         api.status(`Round ${times.length} of ${ROUNDS}`);
         if (times.length >= ROUNDS) {
           state = 'done';
-          view('#151922', '#f4f4f5', 'gauge', `${Math.round(avg())} ms`, 'Average reaction time');
+          view('#19100f', '#f6f4f3', 'gauge', `${Math.round(avg())} ms`, 'Average reaction time');
           api.finish(avg(), { text: `Average: ${Math.round(avg())} ms · fastest ${Math.round(Math.min(...times))} ms` });
           return;
         }
         state = 'result';
-        view('#151922', '#f4f4f5', 'clock', `${Math.round(ms)} ms`, 'Click to continue');
+        view('#19100f', '#f6f4f3', 'clock', `${Math.round(ms)} ms`, 'Click to continue');
       }
     }
 

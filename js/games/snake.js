@@ -58,15 +58,15 @@ export default {
 
     function draw() {
       const W = cv.width, c = W / N;
-      ctx.fillStyle = '#11141c'; ctx.fillRect(0, 0, W, W);
-      ctx.fillStyle = '#161a24';
+      ctx.fillStyle = '#150d0d'; ctx.fillRect(0, 0, W, W);
+      ctx.fillStyle = '#1b1110';
       for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if ((x + y) % 2) ctx.fillRect(x * c, y * c, c, c);
       if (!snake) return;
       ctx.fillStyle = '#f43f5e';
       ctx.beginPath(); ctx.arc(food[0] * c + c / 2, food[1] * c + c / 2, c * 0.34, 0, Math.PI * 2); ctx.fill();
       snake.forEach((s, i) => {
         const t = i / snake.length;
-        ctx.fillStyle = dead ? '#71717a' : (i === 0 ? '#d9f99d' : `hsl(84, ${80 - t * 30}%, ${55 - t * 18}%)`);
+        ctx.fillStyle = dead ? '#7e6e6d' : (i === 0 ? '#d9f99d' : `hsl(84, ${80 - t * 30}%, ${55 - t * 18}%)`);
         const p = c * 0.08;
         roundRect(s[0] * c + p, s[1] * c + p, c - p * 2, c - p * 2, c * 0.28);
       });

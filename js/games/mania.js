@@ -349,7 +349,7 @@ export default {
     function draw() {
       const t = now(), w = wall(), lw = W / 4, y0 = H * LINE, nh = Math.max(8, Math.round(H * 0.032)), speed = y0 / song.approach;
       const yOf = (time) => y0 - (time - t) * speed;
-      ctx.fillStyle = '#11141c'; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#150d0d'; ctx.fillRect(0, 0, W, H);
 
       for (let l = 0; l < 4; l++) { // a glow in the lanes that are held down
         if (!down[l].size) continue;
@@ -357,10 +357,10 @@ export default {
         g.addColorStop(0, HEAD[l] + '38'); g.addColorStop(1, HEAD[l] + '00');
         ctx.fillStyle = g; ctx.fillRect(l * lw, y0 - H * 0.45, lw, H * 0.45 + (H - y0));
       }
-      ctx.fillStyle = '#1c2130';
+      ctx.fillStyle = '#231615';
       for (let l = 1; l < 4; l++) ctx.fillRect(Math.round(l * lw) - 1, 0, 2, H);
       if (state !== 'idle') { // a faint line at every bar
-        ctx.fillStyle = '#1a1f2c';
+        ctx.fillStyle = '#201414';
         const bar = song.beat * 4, first = Math.max(0, Math.ceil((t - 0.3 - song.firstBar) / bar));
         for (let k = first; ; k++) { const y = yOf(song.firstBar + k * bar); if (y < 0 || song.firstBar + k * bar > song.length - 2) break; ctx.fillRect(0, Math.round(y) - 1, W, 2); }
       }
@@ -368,8 +368,8 @@ export default {
       // combo, verdict and count-in sit behind the notes so they never hide one
       if (run.combo >= 5) {
         const pop = 1 + Math.max(0, 0.12 - (w - comboAt)) * 1.4;
-        label(String(run.combo), W / 2, H * 0.3, H * 0.11 * pop, '#262c3d', 800);
-        label('COMBO', W / 2, H * 0.3 + H * 0.075, H * 0.026, '#262c3d', 700);
+        label(String(run.combo), W / 2, H * 0.3, H * 0.11 * pop, '#2d1c1c', 800);
+        label('COMBO', W / 2, H * 0.3 + H * 0.075, H * 0.026, '#2d1c1c', 700);
       }
       if (verdict && w - verdict.at < 0.55) {
         const age = w - verdict.at, [text, color] = JUDGE[verdict.kind];
@@ -379,16 +379,16 @@ export default {
       }
       if (state !== 'idle' && t < song.firstBar - 0.05) {
         const n = Math.ceil((song.firstBar - t) / song.beat);
-        if (n <= 4) label(String(n), W / 2, H * 0.4, H * 0.16, '#3a4258', 800);
+        if (n <= 4) label(String(n), W / 2, H * 0.4, H * 0.16, '#432a29', 800);
       }
 
       // the hit line with one pad per lane
       for (let l = 0; l < 4; l++) {
         const x = l * lw + lw * 0.08, on = down[l].size > 0;
         box(x, y0 - nh / 2, lw * 0.84, nh, nh * 0.4);
-        ctx.fillStyle = on ? HEAD[l] + '55' : '#161a24'; ctx.fill();
-        ctx.lineWidth = Math.max(1.5, H * 0.004); ctx.strokeStyle = on ? HEAD[l] : '#39415a'; ctx.stroke();
-        label('DFJK'[l], (l + 0.5) * lw, y0 + (H - y0) * 0.56, H * 0.042, on ? '#e4e4e7' : '#5b6378', 700);
+        ctx.fillStyle = on ? HEAD[l] + '55' : '#1b1110'; ctx.fill();
+        ctx.lineWidth = Math.max(1.5, H * 0.004); ctx.strokeStyle = on ? HEAD[l] : '#432a29'; ctx.stroke();
+        label('DFJK'[l], (l + 0.5) * lw, y0 + (H - y0) * 0.56, H * 0.042, on ? '#e8e3e3' : '#716362', 700);
       }
       sparks = sparks.filter((s) => w - s.at < 0.28);
       for (const s of sparks) { // a ring that opens up where a note was hit
@@ -408,20 +408,20 @@ export default {
         const yHead = n.state === 'held' ? y0 : yOf(n.t);
         if (n.len) {
           const yTail = Math.min(yHead, yOf(n.t + n.len));
-          ctx.fillStyle = lost ? '#2a3040' : BODY[n.lane];
+          ctx.fillStyle = lost ? '#311e1e' : BODY[n.lane];
           box(x + wd * 0.13, yTail - nh / 2, wd * 0.74, yHead - yTail + nh / 2, nh * 0.4); ctx.fill();
         }
         if (n.state === 'dropped') continue;
-        ctx.fillStyle = lost ? '#3b4257' : HEAD[n.lane];
+        ctx.fillStyle = lost ? '#432a29' : HEAD[n.lane];
         box(x, yHead - nh / 2, wd, nh, nh * 0.4); ctx.fill();
       }
 
       if (state === 'idle') {
-        ctx.fillStyle = 'rgba(17,20,28,.55)'; ctx.fillRect(0, 0, W, y0 - nh);
-        label('Press D, F, J or K', W / 2, H * 0.36, H * 0.05, '#e4e4e7', 700);
-        label('or tap here to start', W / 2, H * 0.36 + H * 0.062, H * 0.036, '#8f98ad', 500);
+        ctx.fillStyle = 'rgba(21,13,13,.55)'; ctx.fillRect(0, 0, W, y0 - nh);
+        label('Press D, F, J or K', W / 2, H * 0.36, H * 0.05, '#e8e3e3', 700);
+        label('or tap here to start', W / 2, H * 0.36 + H * 0.062, H * 0.036, '#a59897', 500);
       } else { // how far into the tune we are
-        ctx.fillStyle = '#242a3a'; ctx.fillRect(0, 0, W, Math.max(2, H * 0.006));
+        ctx.fillStyle = '#2b1b1a'; ctx.fillRect(0, 0, W, Math.max(2, H * 0.006));
         ctx.fillStyle = '#818cf8'; ctx.fillRect(0, 0, W * Math.min(1, t / song.length), Math.max(2, H * 0.006));
       }
     }

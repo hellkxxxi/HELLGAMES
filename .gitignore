@@ -1,0 +1,8 @@
+# The development tools download their dependencies here (cd tools && npm install)
+node_modules/
+
+# Operating-system and editor leftovers
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
