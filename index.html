@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>hellgames by hellkai</title>
+<meta name="description" content="Free browser mini-games you can play instantly: Aim Trainer, Key Mania, Tetris, Pac-Man, Flappy Bird, Lines 98, Sudoku, Snake, 2048, Minesweeper and more.">
+<meta name="theme-color" content="#0b0d12">
+<link rel="stylesheet" href="styles.css">
+<!-- tailwind.css is a pre-generated file and has to stay AFTER styles.css (see README) -->
+<link rel="stylesheet" href="tailwind.css">
+<link rel="manifest" href="manifest.json">
+<!-- The whole site uses one icon file: replace icon.png to change it everywhere -->
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="hellgames">
+</head>
+<body class="antialiased">
+<div id="app" class="min-h-screen flex flex-col">
+  <header class="sticky top-0 z-20 border-b border-white/5 bg-[#0b0d12]/90 backdrop-blur">
+    <div class="max-w-5xl mx-auto px-4 h-14 flex items-center gap-3">
+      <a href="#" class="flex items-center gap-2.5 font-semibold tracking-tight">
+        <img src="icon.png" alt="" class="w-7 h-7 rounded-lg object-cover">
+        <span>hellgames <span class="brand-by">by hellkai</span></span>
+      </a>
+      <div class="ml-auto text-xs text-zinc-500 hidden sm:flex items-center gap-1.5">
+        <i data-lucide="zap" class="w-3.5 h-3.5"></i> Instant play · no installs
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1">
+    <section id="home" class="max-w-5xl mx-auto px-4 py-8">
+      <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight">Pick a game</h1>
+      <p class="text-zinc-400 mt-1 text-sm">Quick rounds that work with a keyboard or touch. Your best scores are saved on this device.</p>
+      <div id="grid" class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+    </section>
+
+    <section id="play" class="hidden max-w-3xl mx-auto px-4 py-4">
+      <div class="flex items-center gap-3">
+        <a href="#" class="btn-icon" aria-label="Back to games" title="Back (Esc)"><i data-lucide="arrow-left"></i></a>
+        <div class="min-w-0 flex-1">
+          <h2 id="g-title" class="font-semibold text-base sm:text-lg leading-tight truncate"></h2>
+          <p id="g-status" class="text-xs text-zinc-400 truncate h-4"></p>
+        </div>
+        <div class="stat"><span id="g-score-label">Score</span><b id="g-score">0</b></div>
+        <div class="stat"><span>Best</span><b id="g-best">–</b></div>
+        <button id="g-restart" class="btn-icon" title="Restart" aria-label="Restart"><i data-lucide="rotate-ccw"></i></button>
+      </div>
+
+      <div id="stage-wrap" class="relative mt-5 flex justify-center">
+        <div id="stage" class="w-full flex flex-col items-center"></div>
+        <div id="overlay" class="overlay hidden">
+          <div class="overlay-card">
+            <div id="ov-icon" class="ov-icon"></div>
+            <h3 id="ov-title" class="text-xl font-semibold tracking-tight"></h3>
+            <p id="ov-text" class="text-sm text-zinc-400 mt-1"></p>
+            <button id="ov-btn" class="btn-primary mt-5"></button>
+          </div>
+        </div>
+      </div>
+      <p id="g-help" class="text-center text-xs text-zinc-500 mt-5"></p>
+    </section>
+  </main>
+</div>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

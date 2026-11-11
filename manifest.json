@@ -1,0 +1,25 @@
+{
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui",
+    "browser"
+  ],
+  "orientation": "any",
+  "id": "./",
+  "name": "hellgames by hellkai",
+  "short_name": "hellgames",
+  "description": "Free browser mini-games you can play instantly: Aim Trainer, Key Mania, Tetris, Pac-Man, Flappy Bird, Lines 98, Sudoku, Snake, 2048, Minesweeper and more.",
+  "start_url": "./",
+  "scope": "./",
+  "background_color": "#0b0d12",
+  "theme_color": "#0b0d12",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
