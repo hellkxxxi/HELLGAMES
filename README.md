@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <a href="https://hellkxxxi.github.io/hellgames/"><b>▶&nbsp; Play now</b></a>
+  <a href="https://hellkxxxi.github.io/HELLGAMES/"><b>▶&nbsp; Play now</b></a>
 </p>
 
 ![The hellgames home page: a grid of game cards on a dark background with a fiery glow](docs/home.png)
@@ -64,8 +64,8 @@ A browser will not run the site from a file opened with a double click, so it ne
 Any one will do:
 
 ```sh
-git clone https://github.com/hellkxxxi/hellgames.git
-cd hellgames
+git clone https://github.com/hellkxxxi/HELLGAMES.git
+cd HELLGAMES
 node tools/serve.mjs            # then open http://localhost:8080
 ```
 
@@ -232,7 +232,7 @@ Two things in `index.html` carry the address of this copy and should be changed 
 
 ## Contributing
 
-Bug reports and ideas are welcome in the [issues](https://github.com/hellkxxxi/hellgames/issues), and so are
+Bug reports and ideas are welcome in the [issues](https://github.com/hellkxxxi/HELLGAMES/issues), and so are
 pull requests. Please run `npm test` in `tools/` before sending one.
 
 ## Licence
