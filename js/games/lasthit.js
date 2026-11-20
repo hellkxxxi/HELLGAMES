@@ -155,8 +155,8 @@ export default {
       if (lane.denies) { ctx.textAlign = 'left'; ctx.fillStyle = '#a3e635'; ctx.font = `600 ${Math.max(11, unit * 0.032)}px ${font}`; ctx.fillText(`${lane.denies} denied`, unit * 0.03, unit * 0.045); ctx.textAlign = 'center'; }
       if (state === 'ready') {
         ctx.fillStyle = 'rgba(10,6,6,.55)'; ctx.fillRect(0, 0, W, H);
-        ctx.fillStyle = '#f6f1ef'; ctx.font = `700 ${Math.max(15, unit * 0.055)}px ${font}`; ctx.fillText('Click or tap to start', W / 2, H * 0.44);
-        ctx.fillStyle = '#aca09f'; ctx.font = `500 ${Math.max(11, unit * 0.032)}px ${font}`; ctx.fillText('Hit a creep when its bar turns yellow', W / 2, H * 0.44 + Math.max(20, unit * 0.07));
+        ctx.fillStyle = '#f6f1ef'; ctx.font = `700 ${Math.max(15, unit * 0.055)}px ${font}`; ctx.fillText('Click or tap to start', W / 2, H * 0.7);
+        ctx.fillStyle = '#aca09f'; ctx.font = `500 ${Math.max(11, unit * 0.032)}px ${font}`; ctx.fillText('Hit a creep when its bar turns yellow', W / 2, H * 0.7 + Math.max(20, unit * 0.07));
       }
     }
     function frame(dt) {

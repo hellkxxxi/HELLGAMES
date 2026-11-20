@@ -50,7 +50,7 @@ export default async function ({ t, open }) {
     return { word: word.textContent, names: keys.map((b) => b.querySelector('b').textContent), ink: keys.findIndex((b) => getComputedStyle(b).backgroundColor === getComputedStyle(word).color) };
   });
   let c = await card();
-  t.equal([await overlay(page), c.word, c.names[c.ink], await text(page, '#g-status')], [false, 'GREEN', 'RED', 'The clock starts with your first answer'], 'Stroop: the first card is GREEN written in red, and it waits');
+  t.equal([await overlay(page), c.word, c.names[c.ink], await text(page, '#g-status')], [false, 'GREEN', 'RED', '30 seconds'], 'Stroop: the first card is GREEN written in red, and it waits');
   await skip(page, 40);
   await sleep(300);
   t.equal(await overlay(page), false, 'Stroop: no time passes before the first answer');
@@ -71,7 +71,7 @@ export default async function ({ t, open }) {
   await page.keyboard.press(String(c.names.indexOf(c.word) === c.ink ? (c.ink + 2) % 4 + 1 : c.names.indexOf(c.word) + 1));
   t.equal(await text(page, '#g-score'), '6', 'Stroop: so does picking the colour that the word names');
   await skip(page, 31);
-  await sleep(300);
+  await sleep(700);
   t.equal(await overlay(page), ['New best!', '8 right, 2 wrong · 3000 ms a card'], 'Stroop: after thirty seconds the round is over');
   t.equal(await text(page, '#g-best'), '6', 'Stroop: the best score is kept');
   await sleep(700);
@@ -98,7 +98,7 @@ export default async function ({ t, open }) {
   const seconds = async () => Number((await text(page, '#g-status')).match(/^(\d+)s/)[1]);
   await skip(page, 40);
   await sleep(300);
-  t.equal([await overlay(page), await text(page, '#g-status')], [false, 'The clock starts with your first tile'], 'Odd: the first field waits for the first click');
+  t.equal([await overlay(page), await text(page, '#g-status')], [false, '30 seconds'], 'Odd: the first field waits for the first click');
   let f = await field();
   t.equal([f.tiles, f.kinds, f.odd >= 0, /^(hsl|rgb)/.test(f.sample)], [4, 2, true, true], 'Odd: the first field has four coloured tiles, one of them a shade off');
   const sizes = [];
@@ -112,7 +112,7 @@ export default async function ({ t, open }) {
   const after = await seconds();
   t.check(before - after >= 3 && before - after <= 4 && await text(page, '#g-score') === '7', `Odd: a wrong tile costs three seconds and brings nothing (${before} s, then ${after} s)`);
   await skip(page, 31);
-  await sleep(300);
+  await sleep(700);
   t.equal(await overlay(page), ['New best!', '7 found · 1 wrong'], 'Odd: the round ends when the time is up');
   await sleep(700);
   await page.click('#ov-btn');
@@ -134,7 +134,8 @@ export default async function ({ t, open }) {
   const fate = (value) => page.evaluate((v) => { window.fate = v; }, value);
   await page.evaluate(() => { window.fate = 0.99; Math.random = () => window.fate; document.querySelector('#g-restart').click(); });
   await sleep(200);
-  const round = async (how) => { await how(); await sleep(850); return [await text(page, '#rp-msg'), await text(page, '#g-score'), await text(page, '#g-best'), await page.evaluate(() => [document.querySelector('#rp-you').dataset.hand, document.querySelector('#rp-devil').dataset.hand])]; };
+  const shown = async () => { await page.waitForFunction(() => !document.querySelector('#rp-msg').textContent.endsWith('…'), { timeout: 10000 }); await sleep(40); }; // the fists have come down
+  const round = async (how) => { await how(); await shown(); return [await text(page, '#rp-msg'), await text(page, '#g-score'), await text(page, '#g-best'), await page.evaluate(() => [document.querySelector('#rp-you').dataset.hand, document.querySelector('#rp-devil').dataset.hand])]; };
   t.equal(await round(() => page.keyboard.press('1')), ['Rock beats scissors: you win', '1', '1', ['rock', 'scissors']], 'RPS: rock beats scissors');
   await fate(0.1);
   t.equal(await round(() => page.click('#rp-keys button[data-h="rock"]')), ['Rock twice: a draw', '1', '1', ['rock', 'rock']], 'RPS: a draw keeps the streak');
@@ -146,7 +147,7 @@ export default async function ({ t, open }) {
   t.equal(await text(page, '#g-status'), '3 won · 1 drawn · 1 lost', 'RPS: the rounds are counted');
   await fate(0.99);
   await page.keyboard.press('3'); await page.keyboard.press('1'); // a second hand while the fists are still coming down is ignored
-  await sleep(850);
+  await shown();
   t.equal(await text(page, '#g-status'), '3 won · 2 drawn · 1 lost', 'RPS: one hand at a time');
   t.problems(page, 'rps');
   await page.close();

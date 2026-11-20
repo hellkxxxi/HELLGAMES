@@ -89,9 +89,11 @@ export default async function ({ t, open, url }) {
     t.equal((await chips()).filter((c) => c[2]).map((c) => c[0]), [kind], `"${kind}" is marked as chosen`);
   }
   await page.click('#grid .card');
-  await sleep(400);
-  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.querySelector('#play').classList.contains('hidden'), { timeout: 10000 });
   await sleep(300);
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.querySelector('#home').classList.contains('hidden'), { timeout: 10000 });
+  await sleep(150);
   t.equal((await readCards()).length, KINDS.at(-1)[1], 'the choice is still there after a game');
   await page.click('#cats [data-cat="All"]');
   t.equal((await readCards()).length, GAMES.length, '"All" brings every game back');

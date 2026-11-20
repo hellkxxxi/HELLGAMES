@@ -204,6 +204,7 @@ async function screenshots() {
       await sleep(250);
     }
     await page.waitForFunction(() => document.querySelector('#dk-hand .pc.can') && document.querySelectorAll('#dk-table .dk-pair').length > 0, { timeout: 10000 }).catch(() => {});
+    await sleep(350); // the card that was just led has slid into its place
   } });
   await shoot('run.png', '#run', { play: async (page) => {
     // With chance at zero the course is a row of flames. The devil sets off, and is caught in the air over the second one.

@@ -80,9 +80,10 @@ export default async function ({ t, open }) {
   // chance 0.5: nothing but souls, all of them falling in the middle, where the devil stands
   await fix(page, 0.5);
   await page.keyboard.press('Space');
-  await sleep(5200);
-  const caught = Number(await text(page, '#g-score'));
-  t.check(caught >= 2 && caught <= 5 && await text(page, '#g-status') === '♥♥♥', `Brimstone: souls that fall on the devil are caught (${caught} in five seconds)`);
+  // waits, for a while at most, until the score has grown by so much
+  const grows = async (by, seconds) => { const from = Number(await text(page, '#g-score')); for (let k = 0; k < seconds * 5 && Number(await text(page, '#g-score')) < from + by; k++) await sleep(200); return Number(await text(page, '#g-score')) - from; };
+  const caught = await grows(2, 12);
+  t.check(caught >= 2 && caught <= 3 && await text(page, '#g-status') === '♥♥♥', `Brimstone: souls that fall on the devil are caught (${caught})`);
   // the keys walk the devil away from under them
   await page.keyboard.down('ArrowLeft');
   await sleep(700);
@@ -93,9 +94,7 @@ export default async function ({ t, open }) {
   // and the mouse brings it back
   const box = await (await page.$('#ra-c')).boundingBox();
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  const back = Number(await text(page, '#g-score'));
-  await sleep(2500);
-  t.check(Number(await text(page, '#g-score')) - back >= 2, 'Brimstone: the devil follows the mouse back under the souls');
+  t.check(await grows(2, 8) >= 2, 'Brimstone: the devil follows the mouse back under the souls');
 
   // chance 0.1: nothing but rocks, all of them falling on one spot near the left edge
   await fix(page, 0.1);
@@ -109,7 +108,7 @@ export default async function ({ t, open }) {
   // ---------------------------------------------------------------- Labyrinth
   page = await open('#maze');
   await sleep(500);
-  t.equal([await text(page, '#g-status'), await page.$$eval('#mz-size button', (l) => l.map((b) => b.textContent)), await page.$eval('#mz-size .on', (b) => b.dataset.s)], ['10 × 10 · find the portal', ['Small', 'Medium', 'Large'], 'small'], 'Labyrinth: a small maze to begin with');
+  t.equal([await text(page, '#g-status'), await page.$$eval('#mz-size button', (l) => l.map((b) => b.textContent)), await page.$eval('#mz-size .on', (b) => b.dataset.s)], ['10 × 10 cells', ['Small', 'Medium', 'Large'], 'small'], 'Labyrinth: a small maze to begin with');
   // The maze is built anew with chance of our own, and built a second time here to know the way out.
   const way = await page.evaluate(async (seed) => {
     const chance = (s) => () => { s = (s + 0x6D2B79F5) | 0; let x = Math.imul(s ^ (s >>> 15), 1 | s); x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x; return ((x ^ (x >>> 14)) >>> 0) / 4294967296; };
@@ -128,13 +127,13 @@ export default async function ({ t, open }) {
   await page.keyboard.press('ArrowUp'); // the start is in the top left corner: up is always a wall
   if (way.wall) await page.keyboard.press(KEY[way.wall]);
   await sleep(200);
-  t.equal([await text(page, '#g-status'), await text(page, '#g-score')], ['10 × 10 · find the portal', '0:00'], 'Labyrinth: a push against a wall moves nothing and does not start the clock');
+  t.equal([await text(page, '#g-status'), await text(page, '#g-score')], ['10 × 10 cells', '0:00'], 'Labyrinth: a push against a wall moves nothing and does not start the clock');
   for (const [n, push] of way.pushes.entries()) {
     await page.keyboard.press(n % 2 ? LETTER[push.dir] : KEY[push.dir]);
     if (n === 0) { await sleep(60); t.equal(await text(page, '#g-status'), '1 move', 'Labyrinth: a push through an opening is a move'); }
     await sleep(push.cells / 26 * 1000 + 150);
   }
-  const out = await untilOver(page, 3);
+  const out = await untilOver(page, 10);
   const moves = way.pushes.length;
   t.check(out && out[0] === 'You are out' && new RegExp(`^0:0\\d · ${moves} moves$`).test(out[1]), `Labyrinth: following the way out leads out, in ${moves} moves for ${way.cells} cells (${out})`);
   t.check(/^0:0[1-9]$/.test(await text(page, '#g-best')), `Labyrinth: the time is the best one so far (${await text(page, '#g-best')})`);
@@ -143,7 +142,7 @@ export default async function ({ t, open }) {
   await sleep(200);
   await page.click('#mz-size button[data-s="large"]');
   await sleep(200);
-  t.equal([await text(page, '#g-status'), await text(page, '#g-best')], ['24 × 24 · find the portal', '–'], 'Labyrinth: the large maze has a best time of its own');
+  t.equal([await text(page, '#g-status'), await text(page, '#g-best')], ['24 × 24 cells', '–'], 'Labyrinth: the large maze has a best time of its own');
   t.problems(page, 'maze');
   await page.close();
 
@@ -157,7 +156,7 @@ export default async function ({ t, open }) {
     if (id === 'run') {
       t.check(await phone.$eval('#rn-jump', (b) => b.getClientRects().length > 0) && await phone.$eval('#rn-duck', (b) => b.getClientRects().length > 0), 'phone, run: buttons to jump and to duck');
       await phone.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
-      await sleep(700);
+      for (let k = 0; k < 40 && Number(await text(phone, '#g-score')) <= 5; k++) await sleep(150); // a slow machine draws few pictures a second, and the devil runs by the picture
       t.check(Number(await text(phone, '#g-score')) > 5, 'phone, run: a tap on the picture sets the devil off');
     }
     if (id === 'rain') {

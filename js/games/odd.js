@@ -56,7 +56,7 @@ export default {
       running = false; clearInterval(ticker);
       kindBtns.forEach((b) => b.classList.toggle('on', b.dataset.k === kind));
       level = 0; slips = 0; left = SECONDS; next();
-      bar.style.width = '100%'; api.score(0); api.status('The clock starts with your first tile');
+      bar.style.width = '100%'; api.score(0); api.status(`${SECONDS} seconds`);
     }
     function begin() { running = true; last = performance.now(); ticker = setInterval(tick, 100); tick(); }
     function end() {

@@ -71,7 +71,7 @@ export default {
       puzzle = makePuzzle(LEVELS[level]);
       bad = tangled(puzzle.points, puzzle.lines); held = -1; moves = 0; t0 = 0; done = false;
       levelBtns.forEach((b) => b.classList.toggle('on', b.dataset.l === level));
-      api.score(0); api.status(`${puzzle.points.length} knots · ${bad.length} lines in a tangle`);
+      api.score(0); api.status(`${puzzle.points.length} knots · ${bad.length} tangled`);
     }
     function draw() {
       const X = (p) => p[0] * W, Y = (p) => p[1] * H, unit = Math.min(W, H);
@@ -91,7 +91,7 @@ export default {
     }
     function check() {
       bad = tangled(puzzle.points, puzzle.lines);
-      api.status(bad.length ? `${bad.length} line${bad.length === 1 ? '' : 's'} in a tangle` : 'Not a line crosses');
+      api.status(bad.length ? `${bad.length} line${bad.length === 1 ? '' : 's'} tangled` : 'Not a line crosses');
     }
     // ---- input: a knot is taken by its nearest point within reach, a wide reach under a finger
     const at = (e) => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height, r]; };

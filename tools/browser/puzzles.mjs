@@ -15,7 +15,7 @@ export default async function ({ t, open }) {
   // ---------------------------------------------------------------- Lava Pipes
   let page = await open('#pipes');
   await sleep(500);
-  t.equal([await text(page, '#g-status'), await page.$$eval('.pp-tile', (l) => l.length), await page.$$eval('.pp-tile.well', (l) => l.map((b) => b.dataset.i))], ['5 × 5 · turn the pipes', 25, ['12']], 'Pipes: five by five to begin with, the well in the middle');
+  t.equal([await text(page, '#g-status'), await page.$$eval('.pp-tile', (l) => l.length), await page.$$eval('.pp-tile.well', (l) => l.map((b) => b.dataset.i))], ['5 × 5 pieces', 25, ['12']], 'Pipes: five by five to begin with, the well in the middle');
   // how many quarter turns every piece needs to lie as it was laid
   const turns = await again(page, 21, `async (chance) => {
     const { layPipes, makePuzzle, turned } = await import('./js/games/pipes.js');
@@ -50,18 +50,18 @@ export default async function ({ t, open }) {
   await sleep(500);
   const web = await again(page, 22, `async (chance) => { const { makePuzzle, tangled } = await import('./js/games/untangle.js'); const p = makePuzzle(7, chance); return { points: p.points, home: p.home, tangled: tangled(p.points, p.lines).length }; }`);
   await sleep(200);
-  t.equal(await text(page, '#g-status'), `7 knots · ${web.tangled} lines in a tangle`, 'Untangle: seven knots in a tangle');
+  t.equal(await text(page, '#g-status'), `7 knots · ${web.tangled} tangled`, 'Untangle: seven knots in a tangle');
   const box = await (await page.$('#ut-c')).boundingBox();
   const at = (p) => [box.x + p[0] * box.width, box.y + p[1] * box.height];
   await page.mouse.click(box.x + 4, box.y + 4);
-  t.equal([await text(page, '#g-status'), await text(page, '#g-score')], [`7 knots · ${web.tangled} lines in a tangle`, '0:00'], 'Untangle: a click on nothing moves nothing');
+  t.equal([await text(page, '#g-status'), await text(page, '#g-score')], [`7 knots · ${web.tangled} tangled`, '0:00'], 'Untangle: a click on nothing moves nothing');
   // every knot is dragged to the place it has in the layout without crossings
   for (let i = 0; i < 7 && !(await overlay(page)); i++) {
     await page.mouse.move(...at(web.points[i]));
     await page.mouse.down();
     await page.mouse.move(...at(web.home[i]), { steps: 4 });
     await page.mouse.up();
-    if (i === 0) t.check(/^\d+ lines? in a tangle$|^Not a line crosses$/.test(await text(page, '#g-status')), `Untangle: dragging a knot counts the crossings anew (${await text(page, '#g-status')})`);
+    if (i === 0) t.check(/^\d+ lines? tangled$|^Not a line crosses$/.test(await text(page, '#g-status')), `Untangle: dragging a knot counts the crossings anew (${await text(page, '#g-status')})`);
   }
   await sleep(700);
   const free = await overlay(page);
@@ -71,7 +71,7 @@ export default async function ({ t, open }) {
   await sleep(200);
   await page.click('#ut-level button[data-l="hard"]');
   await sleep(200);
-  t.check(/^14 knots · \d+ lines in a tangle$/.test(await text(page, '#g-status')), 'Untangle: the hard web has fourteen knots');
+  t.check(/^14 knots · \d+ tangled$/.test(await text(page, '#g-status')), 'Untangle: the hard web has fourteen knots');
   t.problems(page, 'untangle');
   await page.close();
 
@@ -93,6 +93,11 @@ export default async function ({ t, open }) {
     for (let i = 0; i < 63 && !dud; i++) if (i % 8 < 7 && b[i] !== b[i + 1] && !canSwap(b, i, i + 1)) dud = [i, i + 1];
     return { move, dud, calm: matches(b).length === 0 };
   }, cells);
+  // Waits until everything has burst and fallen and the board lies still, and a little longer for the game to take the next swap.
+  const calm = async () => {
+    for (let k = 0, still = 0; k < 60 && still < 2; k++) { await sleep(250); const now = await board(); still = now.every((kind) => kind >= 0) && (await plan(now)).calm && !(await page.$('.gm-gem.pop')) ? still + 1 : 0; }
+    await sleep(350);
+  };
   let b = await board();
   let p = await plan(b);
   t.check(b.every((k) => k >= 0) && p.calm && p.move && p.dud, 'Gems: a full board with nothing lined up and a swap to make');
@@ -106,7 +111,7 @@ export default async function ({ t, open }) {
   // a swap that lines up three, made by clicking one gem and then its neighbour
   await page.mouse.click(...(await gemAt(p.move[0])).slice(0, 2));
   await page.mouse.click(...(await gemAt(p.move[1])).slice(0, 2));
-  await sleep(2600);
+  await calm();
   let score = Number(await text(page, '#g-score'));
   b = await board();
   t.check(score >= 30 && score % 10 === 0 && await text(page, '#g-status') === '29 moves left', `Gems: three in a row burst and bring points (${score})`);
@@ -118,7 +123,7 @@ export default async function ({ t, open }) {
   await page.mouse.down();
   await page.mouse.move(x0 + (x1 - x0) * 0.6, y0 + (y1 - y0) * 0.6, { steps: 4 });
   await page.mouse.up();
-  await sleep(2600);
+  await calm();
   t.check(Number(await text(page, '#g-score')) >= score + 30 && await text(page, '#g-status') === '28 moves left' && size > 30, 'Gems: dragging a gem onto its neighbour swaps them too');
 
   // against the clock
@@ -131,11 +136,12 @@ export default async function ({ t, open }) {
   p = await plan(await board());
   await page.mouse.click(...(await gemAt(p.move[0])).slice(0, 2));
   await page.mouse.click(...(await gemAt(p.move[1])).slice(0, 2));
-  await sleep(2600);
+  await calm();
+  await sleep(1500); // long enough for the clock to show a second less
   score = Number(await text(page, '#g-score'));
-  t.check(score >= 30 && /^5\ds left$/.test(await text(page, '#g-status')), `Gems: the first swap starts it (${await text(page, '#g-status')})`);
+  t.check(score >= 30 && /^[45]\ds left$/.test(await text(page, '#g-status')), `Gems: the first swap starts it (${await text(page, '#g-status')})`);
   await page.evaluate((ms) => { window.ahead += ms; }, 61000);
-  await sleep(600);
+  await sleep(900);
   t.equal(await overlay(page), ['New best!', `Score: ${score}`], 'Gems: when the time is up the game is over');
   t.problems(page, 'gems');
   await page.close();

@@ -675,7 +675,7 @@ a.btn-icon:hover { color: var(--accent2); border-color: color-mix(in srgb, var(-
 .dk-table { flex:1; display:flex; flex-wrap:wrap; justify-content:center; gap:10px 14px; min-width:0; }
 .dk-pair { position:relative; width:calc(var(--cw) * 1.28); height:calc(var(--cw) * 1.4 + 12px); }
 .dk-pair .dk-over { position:absolute; left:28%; top:12px; transform:rotate(7deg); }
-.dk-pair .pc { animation:bj-in .2s ease-out; }
+.dk-pair .pc.new { animation:bj-in .2s ease-out; }
 .dk-hand { width:100%; display:flex; flex-direction:column; gap:6px; min-height:calc(var(--cw) * 1.4 + 10px); padding-top:10px; }
 .dk-hand .pc { cursor:default; transition:transform .12s; }
 .dk-hand .pc.can { cursor:pointer; transform:translateY(-9px); box-shadow:0 0 0 2px var(--accent2), 0 6px 14px rgba(0,0,0,.55); }

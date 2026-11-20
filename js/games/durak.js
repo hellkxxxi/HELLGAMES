@@ -118,6 +118,7 @@ export default {
     const $ = (id) => stage.querySelector('#' + id);
     const handEl = $('dk-hand'), msg = $('dk-msg'), takeBtn = $('dk-take'), doneBtn = $('dk-done');
     let g = createGame(), timer = null, alive = true, flash = ''; // flash: a word about what has just happened, shown for a moment
+    let laid = new Set(); // the cards that are on the table already
     const streak = () => Number(saved.get('streak')) || 0;
     const sorted = (hand) => hand.slice().sort((a, b) => worth(a, g.trump) - worth(b, g.trump) || a.suit.localeCompare(b.suit));
     const later = (fn, ms) => { timer = setTimeout(() => { if (alive) fn(); }, ms); };
@@ -136,14 +137,17 @@ export default {
       const red = g.trump === 'hearts' || g.trump === 'diamonds' ? ' red' : '';
       $('dk-deck').innerHTML = (g.deck.length ? cardHTML(g.deck[0], 'dk-trump') + (g.deck.length > 1 ? cardHTML(null, 'dk-stock') : '') : `<div class="dk-suit${red}"><i data-lucide="${SUIT_ICON[g.trump]}"></i></div>`)
         + `<span class="dk-count${red}"><i data-lucide="${SUIT_ICON[g.trump]}"></i>${g.deck.length ? `${g.deck.length} left` : 'trump'}</span>`;
-      $('dk-table').innerHTML = g.table.map((pair) => `<div class="dk-pair">${cardHTML(pair.attack)}${pair.defence ? cardHTML(pair.defence, 'dk-over') : ''}</div>`).join('');
+      // only a card that has just been played slides in; the ones that lay there already stay still
+      const fresh = (c) => (laid.has(cardName(c)) ? '' : ' new');
+      $('dk-table').innerHTML = g.table.map((pair) => `<div class="dk-pair">${cardHTML(pair.attack, fresh(pair.attack))}${pair.defence ? cardHTML(pair.defence, 'dk-over' + fresh(pair.defence)) : ''}</div>`).join('');
+      laid = new Set(g.table.flatMap((pair) => [pair.attack, pair.defence]).filter(Boolean).map(cardName));
       // the hand: so many cards to a row that each one can still be told and touched
       const cards = sorted(g.hands[0]), perRow = Math.ceil(cards.length / Math.ceil(cards.length / 12)) || 1, rows = [];
       for (let i = 0; i < cards.length; i += perRow) rows.push(cards.slice(i, i + perRow));
       handEl.innerHTML = rows.map((row) => `<div class="dk-row" style="--n:${row.length}">${row.map((c) => cardHTML(c, playable.has(cardName(c)) ? 'can' : '', 'button')).join('')}</div>`).join('');
       takeBtn.disabled = !mine.some((o) => o.type === 'take'); doneBtn.disabled = !mine.some((o) => o.type === 'done');
       msg.textContent = flash || telling();
-      api.status(`Trump: ${g.trump} · ${g.deck.length} left`);
+      api.status(`Trump: ${g.trump} · ${g.deck.length}`);
       drawIcons();
     }
     function finish() {

@@ -76,7 +76,7 @@ export default {
       at = maze.start; pos = xy(at); route = []; been = new Uint8Array(maze.open.length); been[at] = 1;
       moves = 0; t0 = 0; done = false; queued = null;
       sizeBtns.forEach((b) => b.classList.toggle('on', b.dataset.s === size));
-      api.score(0); api.status(`${maze.cols} × ${maze.rows} · find the portal`);
+      api.score(0); api.status(`${maze.cols} × ${maze.rows} cells`);
     }
     function go(dir) {
       if (done) return;

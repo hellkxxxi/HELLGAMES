@@ -28,9 +28,10 @@ export default async function ({ t, open }) {
   t.equal([await marked('picked'), await on('e2')], [[], 'white pawn'], 'Chess: a click on a square it cannot reach puts it down again');
   await click('b1');
   t.equal(await marked('go'), ['a3', 'c3'], 'Chess: a knight has its two jumps');
+  const myMove = async () => { await page.waitForFunction(() => /your move/.test(document.querySelector('#g-status').textContent), { timeout: 15000 }); await sleep(60); }; // the computer has answered
   await click('e2'); await click('e4');
   t.equal([await on('e4'), await on('e2'), await marked('last')], ['white pawn', '', ['e2', 'e4']], 'Chess: a click on a marked square makes the move');
-  await sleep(1500);
+  await myMove();
   const reply = await marked('last');
   t.check(await text(page, '#g-status') === 'Move 2 · your move' && reply.length === 2 && reply.some((s) => /[5-8]$/.test(s)), `Chess: the computer answers (${reply})`);
   await page.keyboard.press('u');
@@ -92,13 +93,14 @@ export default async function ({ t, open }) {
   await saveGame('easy', ['f2f3', 'e7e5', 'g2g4']);
   await sleep(700);
   await page.click('#ov-btn');
-  await sleep(1200);
+  await page.waitForFunction(() => document.querySelector('#ov-title').textContent === 'Checkmate' && !document.querySelector('#overlay').classList.contains('hidden'), { timeout: 15000 });
   t.equal([await overlay(page), await on('h4'), await text(page, '#g-score'), await text(page, '#g-best')], [['Checkmate', 'The computer wins. The streak starts again.'], 'black queen', '0', '1'], 'Chess: the computer does not miss a mate in one, and a lost game ends the streak');
   await sleep(700);
   await page.click('#ov-btn');
   await sleep(300);
   await page.click('#ch-side');
-  await sleep(1500);
+  await sleep(100);
+  await myMove();
   t.equal([await page.$eval('.ch-sq', (b) => b.dataset.s), await text(page, '#g-status'), await text(page, '#ch-side-text'), (await marked('last')).length], ['63', 'Move 1 · your move', 'Play White', 2], 'Chess: playing Black turns the board, and the computer makes the first move');
   t.problems(page, 'chess');
   await page.close();
@@ -106,7 +108,7 @@ export default async function ({ t, open }) {
   // ---------------------------------------------------------------- Durak
   page = await open('#durak');
   await sleep(500);
-  t.equal([await page.$$eval('#dk-hand .pc', (l) => l.length), await page.$$eval('#dk-devil .pc', (l) => l.length), /^Trump: (spades|hearts|diamonds|clubs) · 24 left$/.test(await text(page, '#g-status'))], [6, 6, true], 'Durak: six cards each, twenty-four in the deck');
+  t.equal([await page.$$eval('#dk-hand .pc', (l) => l.length), await page.$$eval('#dk-devil .pc', (l) => l.length), /^Trump: (spades|hearts|diamonds|clubs) · 24$/.test(await text(page, '#g-status'))], [6, 6, true], 'Durak: six cards each, twenty-four in the deck');
   // The cards are dealt anew with chance of the test's own, and a second game with the same chance is kept
   // beside the page. Whatever the page shows has to be what this second game says.
   await page.evaluate(async (seed) => {
@@ -141,7 +143,7 @@ export default async function ({ t, open }) {
     await myTurn();
     if (want.over) break;
     const see = await shown();
-    if (!mismatch && (see.hand !== want.hand || see.devil !== want.devil || see.table !== want.table || see.status !== `Trump: ${want.trump} · ${want.deck} left`)) mismatch = `step ${steps}: the page shows ${JSON.stringify(see)}, the rules say ${JSON.stringify(want)}`;
+    if (!mismatch && (see.hand !== want.hand || see.devil !== want.devil || see.table !== want.table || see.status !== `Trump: ${want.trump} · ${want.deck}`)) mismatch = `step ${steps}: the page shows ${JSON.stringify(see)}, the rules say ${JSON.stringify(want)}`;
     if (!refused && want.table && !want.table.endsWith('/')) { // once: a card that is not allowed now is refused
       const dud = await page.evaluate(() => { const c = document.querySelector('#dk-hand .pc:not(.can)'); if (c) c.click(); return !!c; });
       if (dud) { refused = true; await sleep(100); const after = await shown(); if (after.hand !== see.hand || after.table !== see.table) mismatch ||= `step ${steps}: a card that could not be played was played`; }

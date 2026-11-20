@@ -25,8 +25,9 @@ const BEHIND_WALL = 3; // the first so many spots are in the room behind the doo
 // The body under a head: a box, in the same measure.
 export const bodyOf = (enemy) => ({ x: enemy.x - enemy.r * 1.5, y: enemy.y + enemy.r * 0.9, w: enemy.r * 3, h: enemy.r * 3.4 });
 
-export function createDuels(level = 'normal', rnd = Math.random) {
-  const { show, head } = LEVELS[level];
+// `grow` makes the enemies bigger: a finger on a phone is blunter than a mouse.
+export function createDuels(level = 'normal', rnd = Math.random, grow = 1) {
+  const { show } = LEVELS[level], head = LEVELS[level].head * grow;
   const d = { duel: 0, phase: 'wait', wait: 0.8 + rnd() * 1.2, enemy: null, times: [], heads: 0, lost: 0, shots: 0, hits: 0, over: false, events: [] };
   let last = -1;
   function next(ms, how) {
@@ -89,12 +90,13 @@ export default {
     const levelBtns = [...stage.querySelectorAll('#pk-level button')];
     const font = getComputedStyle(document.body).fontFamily;
     let W = 1, H = 1, level, duels, state = 'ready', aim = [0.5, 0.3], pops = [], flashAt = -9, hurtAt = -9, endTimer = null;
+    const grow = window.matchMedia && window.matchMedia('(pointer: coarse)').matches ? 1.3 : 1;
 
     function reset() {
       clearTimeout(endTimer); api.hideOverlay();
       level = LEVELS[api.variant()] ? api.variant() : 'normal';
       levelBtns.forEach((b) => b.classList.toggle('on', b.dataset.l === level));
-      duels = createDuels(level); state = 'ready'; pops = [];
+      duels = createDuels(level, Math.random, grow); state = 'ready'; pops = [];
       api.score('–'); api.status(`${DUELS} duels`);
     }
     function enemy(e) {

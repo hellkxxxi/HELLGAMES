@@ -49,7 +49,7 @@ export default {
       running = false; clearInterval(ticker);
       score = right = wrong = 0; api.score(0); bar.style.width = '100%';
       now = { word: 1, ink: 0 }; showCard();
-      api.status('The clock starts with your first answer');
+      api.status(`${SECONDS} seconds`);
     }
     function tick() {
       const left = Math.max(0, SECONDS * 1000 - (performance.now() - t0));

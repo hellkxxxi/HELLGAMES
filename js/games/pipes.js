@@ -88,7 +88,7 @@ export default {
       grid.innerHTML = Array.from(board.tiles, (tile, i) => `<button class="pp-tile${i === board.well ? ' well' : ''}" data-i="${i}" aria-label="Piece of pipe">${picture(tile, i === board.well)}</button>`).join('');
       cells = [...grid.children];
       light();
-      api.score(0); api.status(`${board.n} × ${board.n} · turn the pipes`);
+      api.score(0); api.status(`${board.n} × ${board.n} pieces`);
     }
     function rotate(i, back) {
       if (done) return;
