@@ -94,6 +94,79 @@ export default async function ({ t, open }) {
   await sleep(600);
   t.equal(await overlay(), ['The word was ' + second.toUpperCase(), 'Out of tries. The streak starts again.'], 'six wrong tries lose the round');
   t.equal([await text('#g-score'), await text('#g-best')], ['0', '1'], 'the streak is gone, the best stays');
+  await sleep(700);
+  await page.click('#ov-btn');
+  await sleep(300);
+
+  // ---- a word of one's own, sent to a friend as a link
+  const shown = (sel) => page.$eval(sel, (e) => e.getClientRects().length > 0);
+  await type(await answer('en')); await page.keyboard.press('Enter'); // a streak of one, to see that a friend's word leaves it alone
+  await sleep(TURN + 1200);
+  await page.click('#ov-btn');
+  await sleep(300);
+  t.equal(await text('#g-score'), '1', 'a streak of one before the friend’s word');
+  await page.click('#hw-make');
+  t.equal([await shown('#hw-own'), await shown('#hw-board'), await shown('#hw-keys')], [true, false, false], 'the link button opens a page for a word of one’s own in place of the board');
+  await page.type('#hw-own-in', 'abc'); await page.keyboard.press('Enter');
+  t.equal([await text('#hw-own-msg'), await text('#hw-own-link')], ['It takes exactly five English letters.', ''], 'three letters make no link');
+  await page.type('#hw-own-in', 'de');
+  await page.click('#hw-own-copy');
+  await sleep(200);
+  t.equal(await text('#hw-own-msg'), 'Link copied. Send it to a friend. The game does not know this word, so your friend may try any letters.', 'five letters do, and the game says what it did');
+  const link = await text('#hw-own-link');
+  t.check(/#hellword\?w=[\w-]{11}$/.test(link) && !/abcde/i.test(link), `the link does not show the word (${link})`);
+  await page.click('#hw-own-back');
+  t.equal([await shown('#hw-own'), await shown('#hw-board'), (await row(0)).map((c) => c[0]).join('')], [false, true, ''], 'back to the game: nothing of this was typed on the board');
+
+  await page.goto(link);
+  await sleep(900);
+  t.equal([await text('#g-status'), await text('#hw-note'), await text('#g-score')], ['A friend’s word · 1 of 6', 'A friend’s word: it may be a name, so any letters go', '1'], 'the link opens a round with the friend’s word');
+  await type('qwxyz'); await page.keyboard.press('Enter');
+  await sleep(TURN);
+  t.equal(await text('#g-status'), 'A friend’s word · 2 of 6', 'the word is not one the game knows, so any five letters are taken');
+  await page.reload({ waitUntil: 'load' });
+  await sleep(900);
+  t.equal([await text('#g-status'), (await row(0)).map((c) => c[0]).join('')], ['A friend’s word · 2 of 6', 'qwxyz'], 'after a reload the friend’s round carries on');
+  await type('abcde'); await page.keyboard.press('Enter');
+  await sleep(TURN + 500);
+  t.equal(await overlay(), ['Got it!', 'ABCDE in 2 tries. Your friend’s word is solved.'], 'the friend’s word is guessed');
+  t.equal([await text('#g-score'), await page.evaluate(() => localStorage.getItem('arcade:hellword:streak:en'))], ['1', '1'], 'the streak is neither longer nor lost');
+  await sleep(700);
+  await page.click('#ov-btn');
+  await sleep(400);
+  t.equal([await page.evaluate(() => location.hash), await text('#g-status')], ['#hellword', 'Guess 1 of 6'], '"Play on" leads back to the words of the game');
+
+  // a friend's word that the game knows: then only real words may be tried
+  const pack = (w, l) => page.evaluate(async (word, lang) => (await import('./js/games/hellword.js')).packWord(word, lang), w, l);
+  await page.evaluate((code) => { location.hash = 'hellword?w=' + code; }, await pack('crane', 'en'));
+  await sleep(500);
+  t.equal(await text('#hw-note'), 'A friend sent you this word', 'a friend’s word that is in the word list');
+  await type('qwxyz'); await page.keyboard.press('Enter');
+  t.equal([await text('#hw-note'), await text('#g-status')], ['Not in the word list', 'A friend’s word · 1 of 6'], 'only real words may be tried against it');
+  for (let i = 0; i < 5; i++) await page.keyboard.press('Backspace');
+  await type('pilot'); await page.keyboard.press('Enter');
+  await sleep(TURN);
+  await page.click('#g-restart');
+  await sleep(200);
+  t.equal(await overlay(), ['The word was CRANE', 'You gave up on your friend’s word.'], 'Restart gives a friend’s word up and shows it');
+  t.equal(await text('#g-score'), '1', 'and that costs no streak either');
+  await sleep(700);
+  await page.keyboard.press('Enter');
+  await sleep(400);
+  t.equal(await page.evaluate(() => location.hash), '#hellword', 'and then the game goes on with its own words');
+
+  // a Russian word opens the Russian game; choosing the other language leaves the friend's word
+  await page.evaluate((code) => { location.hash = 'hellword?w=' + code; }, await pack('слово', 'ru'));
+  await sleep(500);
+  t.equal([await page.$eval('#hw-lang .on', (b) => b.dataset.l), await page.$$eval('#hw-keys button', (l) => l.length), await text('#g-status')], ['ru', 34, 'A friend’s word · 1 of 6'], 'a Russian word opens the Russian game');
+  await page.click('#hw-lang button[data-l="en"]');
+  await sleep(400);
+  t.equal([await page.evaluate(() => location.hash), await page.$eval('#hw-lang .on', (b) => b.dataset.l), await text('#g-status')], ['#hellword', 'en', 'Guess 1 of 6'], 'the other language is a game of the usual kind');
+
+  // a link that was cut short or mistyped
+  await page.evaluate(() => { location.hash = 'hellword?w=nonsense'; });
+  await sleep(500);
+  t.equal([await text('#hw-note'), await text('#g-status'), await page.evaluate(() => location.hash)], ['That link is broken. Here is a word of the game instead.', 'Guess 1 of 6', '#hellword'], 'a broken link is said to be broken, and the game goes on');
   t.problems(page);
   await page.close();
 

@@ -5,40 +5,77 @@ import { createTally, createTransport } from '../rhythm.js';
 // The grid is three cells wide and three high; places on it are measured in cells, from 0 to 3.
 // gap: the shortest time between two squares · approach: seconds a square flies before it arrives ·
 // reach: how far from the middle of a cell the cursor may be and still catch its square (half a cell
-// is the edge of the cell) · late: for how long after its moment a square can still be caught
+// is the edge of the cell) · late: for how long after its moment a square can still be caught ·
+// snake: squares that follow each other at least this fast make a snake · fill: where the drums play
+// their fill a snake is added, one square every so many sixteenths · jump: how often a square lands
+// far from the one before
 export const MODES = {
-  easy: { gap: 0.3, approach: 1.25, reach: 0.74, late: 0.11 },
-  normal: { gap: 0.2, approach: 1, reach: 0.68, late: 0.09 },
-  hard: { gap: 0.13, approach: 0.8, reach: 0.62, late: 0.07 },
+  easy: { gap: 0.3, approach: 1.25, reach: 0.74, late: 0.11, snake: 0, fill: 0, jump: 0 },
+  normal: { gap: 0.2, approach: 1, reach: 0.68, late: 0.09, snake: 0, fill: 2, jump: 0 },
+  hard: { gap: 0.1, approach: 0.78, reach: 0.6, late: 0.075, snake: 0.11, fill: 1, jump: 0.3 },
+  hell: { gap: 0.08, approach: 0.62, reach: 0.54, late: 0.065, snake: 0.095, fill: 1, jump: 0.5 },
 };
 const EARLY = 0.02; // a cursor that was on the spot this long before the moment and has just left still counts: about one frame
+const SNAKE_MIN = 3; // fewer squares than this are not a snake
 const RING = [[0, 0], [1, 0], [2, 0], [2, 1], [2, 2], [1, 2], [0, 2], [0, 1]]; // the eight outer cells, clockwise
 const CELLS = [0, 1, 2].flatMap((row) => [0, 1, 2].map((col) => [col, row]));
 
 // ---------------------------------------------------------------- where the squares go (nothing is drawn here)
 // Turns the notes of a tune into squares on the grid. Quick notes run around the outer cells, so the
 // hand draws circles; slower ones step to a cell nearby; after a pause a square may land anywhere.
+// A snake is a row of quick squares, each in the cell next to the one before: the cursor is dragged
+// along it. Every square of a snake has its number (`snake`), and all but its head are a `link`.
 export function makeChart(song, modeId, rnd = Math.random) {
   const mode = MODES[modeId], chart = [], pick = (list) => list[Math.floor(rnd() * list.length)];
-  let col = 1, row = 1, spin = rnd() < 0.5 ? 1 : -1, last = -Infinity, same = 0;
-  for (const n of song.notes) {
-    if (n.t < last + mode.gap - 1e-6) continue; // too soon after the one before (or at the very same moment)
+  const step = song.beat / 4, bar = song.beat * 4;
+
+  // when: the notes of the tune, and the squares of the snakes that go with the fills of the drums
+  const all = song.notes.map((n) => ({ t: n.t, fill: false }));
+  if (mode.fill) {
+    const fills = new Set([song.bars - 1]); // the drums play a fill in the last bar of every eight and of the tune
+    for (let b = 7; b < song.bars; b += 8) fills.add(b);
+    for (const b of fills) for (let k = 8 + mode.fill; k < 16; k += mode.fill) all.push({ t: song.firstBar + b * bar + k * step, fill: true });
+  }
+  all.sort((a, b) => a.t - b.t || a.fill - b.fill);
+  const when = [];
+  for (const n of all) if (!when.length || n.t >= when[when.length - 1].t + mode.gap - 1e-6) when.push(n); // not too soon after the one before
+
+  // which squares hang on the one before them, and how long the snakes are that this makes
+  const hangs = when.map((n, i) => i > 0 && (n.t - when[i - 1].t <= mode.snake || n.fill || (when[i - 1].fill && n.t - when[i - 1].t <= mode.fill * step + 1e-6)));
+  const length = when.map(() => 1);
+  for (let i = when.length - 1, run = 1; i >= 0; i--) { length[i] = run; run = hangs[i] ? run + 1 : 1; } // squares from here to the tail
+  for (let i = 1; i < when.length; i++) if (hangs[i]) length[i] = length[i - 1]; // every square knows the length of its snake
+
+  let col = 1, row = 1, spin = rnd() < 0.5 ? 1 : -1, last = -Infinity, same = 0, snake = 0, trail = [];
+  when.forEach((n, i) => {
     const since = n.t - last, at = RING.findIndex(([c, r]) => c === col && r === row);
+    const inSnake = length[i] >= SNAKE_MIN, link = inSnake && hangs[i];
     let next;
-    if (since < 0.27) {
-      const roll = rnd();
-      if (roll < 0.12 && same < 2) next = [col, row];        // twice on the same spot
+    if (link) {
+      // the next cell of a snake: beside the last one, never straight back, and rather not where the snake has just been
+      const from = trail[trail.length - 2];
+      const beside = CELLS.filter(([c, r]) => Math.abs(c - col) + Math.abs(r - row) === 1 && !(from && from[0] === c && from[1] === r));
+      const fresh = beside.filter(([c, r]) => !trail.slice(-4).some((p) => p[0] === c && p[1] === r));
+      const options = fresh.length ? fresh : beside;
+      const outer = options.filter(([c, r]) => c !== 1 || r !== 1); // snakes like the outer cells and cross the middle now and then
+      next = outer.length && rnd() < 0.8 ? pick(outer) : pick(options);
+    } else if (since < 0.27) {
+      const roll = rnd(), far = CELLS.filter(([c, r]) => Math.max(Math.abs(c - col), Math.abs(r - row)) === 2);
+      if (mode.jump && far.length && since >= 0.15 && rnd() < mode.jump) next = pick(far); // across the grid
+      else if (roll < 0.12 && same < 2 && !inSnake) next = [col, row]; // twice on the same spot
       else if (at < 0) next = pick(RING);                    // out of the middle
       else if (roll < 0.2) next = [1, 1];                    // through the middle
       else { if (roll > 0.9) spin = -spin; next = RING[(at + spin + 8) % 8]; }
     } else {
-      const near = since < 0.55;
+      const near = since < 0.55 && !(mode.jump && rnd() < mode.jump);
       next = pick(CELLS.filter(([c, r]) => (c !== col || r !== row) && (!near || (Math.abs(c - col) <= 1 && Math.abs(r - row) <= 1))));
     }
     same = next[0] === col && next[1] === row ? same + 1 : 0;
     [col, row] = next; last = n.t;
-    chart.push({ t: n.t, col, row });
-  }
+    if (inSnake && !link) { snake++; trail = []; }
+    if (inSnake) trail.push(next);
+    chart.push(inSnake ? { t: n.t, col, row, snake, link } : { t: n.t, col, row });
+  });
   return chart;
 }
 
@@ -79,6 +116,7 @@ export function createRun(chart, modeId) {
 
 // ---------------------------------------------------------------- the game on screen
 const COLORS = ['#ff7a3d', '#a78bfa'];
+const SNAKE = '#4ade80'; // every square of a snake, and the line that joins them
 const DEPTH = 5.5;   // a square that has just appeared is this many times smaller, plus one, than when it arrives
 const EDGE = 0.13;   // the cursor stays this far inside the grid
 // the number pad and the left of the keyboard are laid out like the grid
@@ -89,7 +127,7 @@ export default {
   id: 'catcher', name: 'Soul Catcher', icon: 'scan', color: '#38bdf8', tag: 'Rhythm', since: '1.1',
   desc: 'Squares fly at you to the music: be on the right spot of the grid when each one arrives. Nothing to click.',
   help: 'Move the mouse or slide a finger over the grid · or jump from cell to cell with the number pad or Q W E, A S D, Z X C · P to pause',
-  variants: { easy: 'Easy', normal: 'Normal', hard: 'Hard' },
+  variants: { easy: 'Easy', normal: 'Normal', hard: 'Hard', hell: 'Hell' },
   create(stage, api) {
     stage.innerHTML = `
       <div class="mn-top">
@@ -153,14 +191,23 @@ export default {
       frame(1); ctx.stroke();
 
       // the squares, the farthest first
+      const place = (n) => { // where a square is on screen: [x, y, how much smaller than at the grid, how clear]
+        const z = (n.t - t) / approach, scale = 1 / (1 + Math.max(z, -0.12) * DEPTH);
+        return [cx + (n.col - 1) * cell * scale, cy + (n.row - 1) * cell * scale, scale, clamp((1 - z) / 0.2, 0, 1)];
+      };
       for (let i = run.notes.length - 1; i >= 0; i--) {
         const n = run.notes[i];
         if (n.t - approach > t || n.state === 'hit') continue;
         if (n.state === 'missed' && t - n.at > 0.25) { if (n.t < t - 2) break; continue; }
-        const z = (n.t - t) / approach, scale = 1 / (1 + Math.max(z, -0.12) * DEPTH), side = cell * 0.8 * scale;
-        const x = cx + (n.col - 1) * cell * scale, y = cy + (n.row - 1) * cell * scale;
-        const color = n.state === 'missed' ? '#f87171' : COLORS[i % COLORS.length];
-        ctx.globalAlpha = n.state === 'missed' ? clamp(1 - (t - n.at) / 0.25, 0, 1) * 0.6 : clamp((1 - z) / 0.2, 0, 1);
+        const [x, y, scale, clear] = place(n), side = cell * 0.8 * scale;
+        const color = n.state === 'missed' ? '#f87171' : n.snake ? SNAKE : COLORS[i % COLORS.length];
+        const before = n.link ? run.notes[i - 1] : null; // the body of a snake: a line to the square before
+        if (before && before.state === 'wait' && n.state === 'wait') {
+          const [bx, by, bs] = place(before);
+          ctx.globalAlpha = clear * 0.75; ctx.strokeStyle = SNAKE; ctx.lineCap = 'round'; ctx.lineWidth = Math.max(1.5, cell * 0.2 * (scale + bs) / 2);
+          ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(x, y); ctx.stroke();
+        }
+        ctx.globalAlpha = n.state === 'missed' ? clamp(1 - (t - n.at) / 0.25, 0, 1) * 0.6 : clear;
         box(x - side / 2, y - side / 2, side, side, side * 0.2);
         ctx.fillStyle = color; ctx.globalAlpha *= 0.22; ctx.fill(); ctx.globalAlpha /= 0.22;
         ctx.strokeStyle = color; ctx.lineWidth = Math.max(1.5, side * 0.11); ctx.stroke();

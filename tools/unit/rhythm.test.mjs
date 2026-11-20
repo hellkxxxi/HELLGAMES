@@ -7,7 +7,7 @@ import * as circles from '../../js/games/circles.js';
 import * as catcher from '../../js/games/catcher.js';
 import { seeded } from './seeded.mjs';
 
-const MODES = ['easy', 'normal', 'hard'];
+const MODES = ['easy', 'normal', 'hard', 'hell'];
 
 test('rhythm games: how a run is scored', () => {
   const all = createTally(4);
@@ -37,7 +37,27 @@ test('Circles of Hell: the circles of a tune', () => {
       assert.ok(o.number >= 1 && (i === 0 || o.number === 1 || o.number === chart[i - 1].number + 1), 'the numbers count up and start again');
       if (i) assert.ok(o.t >= chart[i - 1].t + chart[i - 1].len + m.gap - 1e-6, `${mode} ${seed}: time to get from circle ${i - 1} to ${i}`);
       assert.ok(o.t + o.len < song.length, 'everything ends before the tune does');
+      if (o.chain) { // a circle of a quick chain lies half over the one before it
+        const prev = chart[i - 1];
+        assert.ok(!o.len && !prev.len && o.t - prev.t < 0.135, `${mode} ${seed}: only quick circles make a chain (circle ${i})`);
+        assert.ok(Math.abs(Math.hypot(o.x - prev.x, o.y - prev.y) - m.radius * 1.2) < 1e-9, `${mode} ${seed}: the circles of a chain are 1.2 radii apart (circle ${i})`);
+      }
     });
+    const chained = chart.filter((o) => o.chain).length;
+    if (mode === 'easy' || mode === 'normal') assert.equal(chained, 0, `${mode} ${seed}: no chains`);
+    else assert.ok(chained > chart.length * 0.4, `${mode} ${seed}: ${chained} of ${chart.length} circles are in chains`);
+  }
+});
+
+test('Circles of Hell: the hard levels are harder', () => {
+  const stats = MODES.map((mode) => {
+    const rnd = seeded(7), song = makeSong(mode, rnd), chart = circles.makeChart(song, mode, rnd);
+    return { perSecond: chart.length / (chart.at(-1).t - chart[0].t), ...circles.MODES[mode] };
+  });
+  for (let i = 1; i < stats.length; i++) {
+    const a = stats[i - 1], b = stats[i];
+    assert.ok(b.perSecond > a.perSecond * 1.3, `${MODES[i]}: more circles in a second than ${MODES[i - 1]} (${b.perSecond.toFixed(1)} against ${a.perSecond.toFixed(1)})`);
+    assert.ok(b.radius < a.radius && b.approach < a.approach && b.flow > a.flow && b.windows.every((w, k) => w < a.windows[k]), `${MODES[i]}: smaller, quicker, wider apart and stricter`);
   }
 });
 
@@ -89,24 +109,73 @@ test('Circles of Hell: what a click can hit', () => {
   const late = circles.createRun(chart, 'easy'); late.setField(400, 300, 30);
   assert.equal(late.press(2 + good + 0.01, 0.2, 0.2), null, 'too late: the circle is already lost');
   assert.deepEqual([late.tally.counts.miss, late.objs[0].state], [1, 'missed']);
+
+  // a quick chain: a click on the second circle gives the first one up, but only once its moment has come
+  const quick = [{ t: 2, len: 0, x: 0.2, y: 0.2, path: null, group: 1, number: 1 }, { t: 2.1, len: 0, x: 0.4, y: 0.2, path: null, group: 1, number: 2 }, { t: 2.2, len: 0, x: 0.6, y: 0.2, path: null, group: 1, number: 3 }];
+  const chain = circles.createRun(quick, 'hard'); chain.setField(400, 300, 30);
+  assert.equal(chain.press(1.99, 0.4, 0.2), null, 'the second circle cannot be hit before the moment of the first');
+  assert.equal(chain.tally.judged, 0);
+  assert.equal(chain.press(2.1, 0.4, 0.2), 'perfect', 'after it, a click on the second circle counts');
+  assert.deepEqual([chain.objs[0].state, chain.objs[1].state, chain.tally.counts.miss, chain.tally.counts.perfect, chain.tally.combo], ['missed', 'done', 1, 1, 1], 'and the first is lost');
+  assert.equal(chain.press(2.2, 0.6, 0.2), 'perfect');
+  const skip = circles.createRun(quick, 'hard'); skip.setField(400, 300, 30);
+  assert.equal(skip.press(2.05, 0.6, 0.2), null, 'the third circle cannot be hit while the first two wait');
+  assert.equal(skip.press(2.06, 0.2, 0.2), 'great', 'and the first is still there to be hit');
 });
 
 // ---------------------------------------------------------------- Soul Catcher
 test('Soul Catcher: the squares of a tune', () => {
   for (const mode of MODES) for (const seed of [1, 2, 3]) {
     const rnd = seeded(seed), song = makeSong(mode, rnd), chart = catcher.makeChart(song, mode, rnd);
-    assert.ok(chart.length > 40 && chart.length <= song.notes.length, `${mode} ${seed}: ${chart.length} squares`);
+    const m = catcher.MODES[mode];
+    assert.ok(chart.length > 40, `${mode} ${seed}: ${chart.length} squares`);
     let same = 0;
     chart.forEach((n, i) => {
       assert.ok([0, 1, 2].includes(n.col) && [0, 1, 2].includes(n.row), 'on the grid');
+      assert.ok(n.t < song.length, 'before the tune ends');
       if (!i) return;
       const prev = chart[i - 1], since = n.t - prev.t, step = Math.max(Math.abs(n.col - prev.col), Math.abs(n.row - prev.row));
-      assert.ok(since >= catcher.MODES[mode].gap - 1e-6, `${mode} ${seed}: time to get to square ${i}`);
-      if (since < 0.55) assert.ok(step <= 1 || (prev.col === 1 && prev.row === 1), `${mode} ${seed}: a quick note is one step away (square ${i})`);
+      assert.ok(since >= m.gap - 1e-6, `${mode} ${seed}: time to get to square ${i}`);
+      if (since < 0.55 && !m.jump) assert.ok(step <= 1 || (prev.col === 1 && prev.row === 1), `${mode} ${seed}: a quick note is one step away (square ${i})`);
+      if (since < 0.15) assert.ok(step <= 1 || (prev.col === 1 && prev.row === 1), `${mode} ${seed}: no leap across the grid in a sixteenth (square ${i})`);
       same = step === 0 ? same + 1 : 0;
       assert.ok(same <= 2, 'no more than three in a row on one spot');
     });
     assert.ok(new Set(chart.map((n) => n.row * 3 + n.col)).size === 9, `${mode} ${seed}: every cell is used`);
+
+    // the snakes: rows of quick squares, each in the cell beside the one before
+    const snakes = new Map();
+    chart.forEach((n, i) => {
+      assert.equal(!!n.link, !!n.snake && snakes.has(n.snake), 'every square of a snake but its head is a link');
+      if (!n.snake) return;
+      if (!snakes.has(n.snake)) snakes.set(n.snake, []);
+      const body = snakes.get(n.snake), prev = chart[i - 1];
+      if (n.link) {
+        assert.equal(prev.snake, n.snake, 'a snake has no gaps');
+        assert.equal(Math.abs(n.col - prev.col) + Math.abs(n.row - prev.row), 1, `${mode} ${seed}: square ${i} of a snake is beside the one before`);
+        if (body.length > 1) assert.ok(body.at(-2).col !== n.col || body.at(-2).row !== n.row, `${mode} ${seed}: a snake never turns straight back (square ${i})`);
+      }
+      body.push(n);
+    });
+    const lengths = [...snakes.values()].map((body) => body.length);
+    assert.ok(lengths.every((n) => n >= 3), 'a snake has three squares or more');
+    if (mode === 'easy') assert.equal(lengths.length, 0, 'easy: no snakes');
+    else if (mode === 'normal') assert.ok(lengths.length >= 3 && lengths.every((n) => n === 5), `normal ${seed}: a snake of five with every fill of the drums (${lengths})`);
+    else assert.ok(lengths.length > 20 && Math.max(...lengths) >= 9, `${mode} ${seed}: many snakes, some of them long (${lengths.length}, up to ${Math.max(...lengths)})`);
+  }
+});
+
+test('Soul Catcher: the hard levels are harder', () => {
+  const stats = MODES.map((mode) => {
+    const rnd = seeded(7), song = makeSong(mode, rnd), chart = catcher.makeChart(song, mode, rnd);
+    let way = 0;
+    chart.forEach((n, i) => { if (i) way += Math.hypot(n.col - chart[i - 1].col, n.row - chart[i - 1].row); });
+    return { cellsPerSecond: way / (chart.at(-1).t - chart[0].t), ...catcher.MODES[mode] };
+  });
+  for (let i = 1; i < stats.length; i++) {
+    const a = stats[i - 1], b = stats[i];
+    assert.ok(b.cellsPerSecond > a.cellsPerSecond * 1.2, `${MODES[i]}: the cursor has further to go in a second than in ${MODES[i - 1]} (${b.cellsPerSecond.toFixed(1)} cells against ${a.cellsPerSecond.toFixed(1)})`);
+    assert.ok(b.reach < a.reach && b.approach < a.approach && b.late < a.late, `${MODES[i]}: closer, quicker and stricter`);
   }
 });
 

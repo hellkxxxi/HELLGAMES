@@ -160,7 +160,7 @@ test('Sudoku: every puzzle has exactly one solution and the promised difficulty'
 
 // ---------------------------------------------------------------- Key Mania
 test('Key Mania: a perfect run scores the maximum, an idle one scores nothing', () => {
-  for (const mode of ['easy', 'normal', 'hard']) {
+  for (const mode of ['easy', 'normal', 'hard', 'hell']) {
     const song = makeSong(mode, seeded(5));
     assert.ok(song.notes.length > 40, `${mode}: enough notes`);
     assert.ok(song.notes.every((n, i) => n.lane >= 0 && n.lane < 4 && (!i || n.t >= song.notes[i - 1].t)), `${mode}: notes are in order`);

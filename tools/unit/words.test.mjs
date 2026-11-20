@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { HELLWORDS } from '../../js/data/hellword.js';
 import { WORDS } from '../../js/data/words.js';
-import { LANGS, LENGTH, TRIES, createRound, judge, letterOf } from '../../js/games/hellword.js';
+import { LANGS, LENGTH, TRIES, createRound, judge, letterOf, ownWord, packWord, unpackWord } from '../../js/games/hellword.js';
 import { fantasyName, invent, learn, nickname } from '../../js/games/names.js';
 import { seeded } from './seeded.mjs';
 
@@ -71,6 +71,26 @@ test('Hellword: which letter a key stands for', () => {
   assert.equal(letterOf({ char: '1', code: 'Digit1' }, 'ru'), null);
   assert.equal(letterOf({ char: 'Enter', code: 'Enter' }, 'ru'), null);
   for (const row of LANGS.ru.rows) for (const ch of row) assert.equal(letterOf({ char: ch, code: '' }, 'ru'), ch);
+});
+
+test('Hellword: a word of one\'s own travels in a link', () => {
+  assert.deepEqual([ownWord(' Crane ', 'en'), ownWord('ЁЛОЧК', 'ru')], ['crane', 'елочк'], 'tidied up: lower case, no spaces around it, ё spelled е');
+  assert.deepEqual([ownWord('cran', 'en'), ownWord('cranes', 'en'), ownWord('cr4ne', 'en'), ownWord('слово', 'en'), ownWord('crane', 'ru'), ownWord('', 'ru')], [null, null, null, null, null, null], 'exactly five letters of the language, or nothing');
+  const seen = new Set();
+  for (let salt = 0; salt < 256; salt++) {
+    for (const [word, lang] of [['crane', 'en'], ['aaaaa', 'en'], ['zzzzz', 'en'], ['слово', 'ru'], ['яяяяя', 'ru']]) {
+      const code = packWord(word, lang, salt);
+      assert.match(code, /^[A-Za-z0-9_-]{11}$/, 'eleven characters that are safe in an address');
+      assert.deepEqual(unpackWord(code), { lang, word }, `${word} with chance ${salt} comes back as it went in`);
+      if (word === 'crane') seen.add(code);
+    }
+  }
+  assert.equal(seen.size, 256, 'the same word looks different from one link to the next');
+  assert.ok(![...seen].some((code) => /crane/i.test(code) || /crane/i.test(atob(code.replace(/-/g, '+').replace(/_/g, '/')))), 'and cannot be read in it');
+  assert.deepEqual(unpackWord(packWord('crane', 'en')), { lang: 'en', word: 'crane' }, 'chance of its own when none is given');
+  const code = packWord('crane', 'en', 77);
+  const flipped = (i) => code.slice(0, i) + (code[i] === 'A' ? 'B' : 'A') + code.slice(i + 1);
+  for (const bad of ['', 'abc', '!!!!!!!!!!!', 'x'.repeat(11), code.slice(0, -1), code + 'A', code.slice(2), flipped(3), flipped(6), flipped(9)]) assert.equal(unpackWord(bad), null, `"${bad}" is not a word`);
 });
 
 // ---------------------------------------------------------------- Name Forge

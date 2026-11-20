@@ -74,10 +74,20 @@ export default async function ({ t, browser, url }) {
   t.equal(await page.$eval('#cr-snd', (b) => b.title), 'Sound is on', 'Circles: the sound is on');
   await page.click('#cr-snd');
   t.equal([await page.$eval('#cr-snd', (b) => b.title), await page.evaluate(() => localStorage.getItem('arcade:mute'))], ['Sound is off', '1'], 'Circles: the sound button switches it off');
+  const LEVELS = ['Easy', 'Normal', 'Hard', 'Hell'];
+  const levels = (sel) => page.$$eval(`${sel} button`, (list) => list.map((b) => b.textContent));
+  t.equal(await levels('#cr-mode'), LEVELS, 'Circles: four levels');
+  await page.click('#cr-mode button[data-m="hell"]');
+  await sleep(200);
+  t.check(/^172 BPM · [45]\d\d circles$/.test(await text(page, '#g-status')), `Circles: Hell has the quickest tune and the most circles (${await text(page, '#g-status')})`);
   await page.evaluate(() => { location.hash = 'mania'; });
   await sleep(500);
   t.equal(await page.$eval('#mn-snd', (b) => b.title), 'Sound is off', 'and Key Mania follows the same switch');
   await page.click('#mn-snd');
+  t.equal(await levels('#mn-mode'), LEVELS, 'Key Mania: four levels');
+  await page.click('#mn-mode button[data-m="hell"]');
+  await sleep(200);
+  t.check(/^172 BPM · \d+ notes$/.test(await text(page, '#g-status')), `Key Mania: Hell has the quickest tune (${await text(page, '#g-status')})`);
   t.problems(page, 'circles');
   await page.close();
 
@@ -115,6 +125,33 @@ export default async function ({ t, browser, url }) {
   await sleep(4000);
   now = await state(page);
   t.check(now.accuracy < 100, `Catcher: squares that fly past an idle cursor are lost (${JSON.stringify(now)})`);
+
+  // Hard has snakes: rows of quick squares, each in the cell beside the one before. A cursor that is
+  // dragged along them catches every square.
+  t.equal(await page.$$eval('#ct-mode button', (list) => list.map((b) => b.textContent)), ['Easy', 'Normal', 'Hard', 'Hell'], 'Catcher: four levels');
+  await page.click('#ct-mode button[data-m="hard"]');
+  await sleep(300);
+  plan = await page.evaluate(async (seed, until) => {
+    const { makeSong } = await import('./js/games/mania.js');
+    const { makeChart } = await import('./js/games/catcher.js');
+    // the page has used up some chance since it was opened: a tune of our own is put in its place
+    const rnd = window.chance(seed);
+    Math.random = window.chance(seed);
+    document.querySelector('#g-restart').click();
+    const song = makeSong('hard', rnd), chart = makeChart(song, 'hard', rnd);
+    const cv = document.querySelector('#ct-c'), r = cv.getBoundingClientRect(), cell = Math.min(r.width, r.height) * 0.9 / 3;
+    const move = (col, row) => window.dispatchEvent(new PointerEvent('pointermove', { clientX: r.left + r.width / 2 + (col - 1) * cell, clientY: r.top + r.height / 2 + (row - 1) * cell, pointerId: 1, pointerType: 'mouse', bubbles: true }));
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true }));
+    const started = performance.now(), wait = (s) => s * 1000 - (performance.now() - started);
+    const mine = chart.filter((n) => n.t < until), next = chart[mine.length];
+    for (const n of mine) setTimeout(() => move(n.col, n.row), wait(n.t - 0.05));
+    const snakes = new Set(mine.filter((n) => n.snake).map((n) => n.snake));
+    return { caught: mine.length, snakes: snakes.size, inSnakes: mine.filter((n) => n.snake).length, squares: chart.length, wait: wait(next.t - 0.02), status: document.querySelector('#g-status').textContent };
+  }, SEED + 1, 7);
+  await sleep(Math.max(0, plan.wait));
+  now = await state(page);
+  t.check(plan.snakes >= 3 && plan.inSnakes > 15 && now.combo === plan.caught && now.accuracy === 100, `Catcher, hard: ${plan.caught} squares are caught, ${plan.inSnakes} of them in ${plan.snakes} snakes (the game says ${JSON.stringify(now)})`);
+  t.check(/^146 BPM · 3\d\d squares$/.test(plan.status), `Catcher, hard: about twice the squares of the level before (${plan.status})`);
   t.problems(page, 'catcher');
   await page.close();
 

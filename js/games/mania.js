@@ -14,24 +14,28 @@ const MODES = {
   easy: { bpm: 96, bars: 20, approach: 1.3, doubles: 0 },
   normal: { bpm: 122, bars: 24, approach: 1.05, doubles: 0.3 },
   hard: { bpm: 146, bars: 32, approach: 0.85, doubles: 0.55 },
+  hell: { bpm: 172, bars: 40, approach: 0.7, doubles: 0.7 },
 };
 // One bar is 16 steps; x marks a note of the melody. A bar from ENDINGS closes every eight-bar part.
 const RHYTHMS = {
   easy: ['x...x...x...x...', 'x...x...x.x.x...', 'x.x.x...x...x...', 'x...x.x.x...x...', 'x.......x...x...', 'x.x.x.x.x...x...'],
   normal: ['x.x.x.x.x.x.x...', 'x...x.x.x.xxx...', 'x.xxx...x.x.x.x.', 'x.x...x.x.x.x...', 'x..x..x.x..x..x.', 'x.......x.x.x.x.', 'x.x.xxx.x.x.x...'],
   hard: ['x.xxx.xxx.xxx.x.', 'xxxxx.x.xxxxx.x.', 'x.x.xxxxx.x.xxxx', 'x..x..x.x..x..xx', 'xxx.xxx.xxx.x.x.', 'x.xxx.x.x.xxx.x.', 'x.xxx.xxx.x.xxxx'],
+  hell: ['xxxxxxxxx.x.xxxx', 'x.xxxxxxx.xxx.x.', 'xxxxx.xxxxxxx.x.', 'x.xxx.xxxxxxxxxx', 'xxx.xxx.xxxxxxx.', 'xxxxxxx.xxxxxxx.', 'x.x.xxxxxxxxx.xx'],
 };
 const ENDINGS = {
   easy: ['x...x...x.......', 'x.x.x...x.......'],
   normal: ['x.x.x.x.x.......', 'x.xxx.x.x.......'],
   hard: ['xxxxx.xxx.......', 'x.xxxxxxx.......'],
+  hell: ['xxxxxxxxx.......', 'xxxxx.xxx.......'],
 };
 const DRUMS = {
   easy: { kick: 'x.......x.......', snare: '....x.......x...', hat: 'x.x.x.x.x.x.x.x.' },
   normal: { kick: 'x.......x.x.....', snare: '....x.......x...', hat: 'x.x.x.x.x.x.x.x.' },
   hard: { kick: 'x.....x.x.x.....', snare: '....x.......x...', hat: 'x.x.x.xxx.x.x.xx' },
+  hell: { kick: 'x...x...x...x.x.', snare: '....x.......x...', hat: 'xxxxxxxxxxxxxxxx' },
 };
-const BASS = { easy: 'r.......r.....r.', normal: 'r.r.r.r.r.r.r.5.', hard: 'r.r.o.r.r.r.o.5.' }; // r root, o an octave up, 5 the fifth
+const BASS = { easy: 'r.......r.....r.', normal: 'r.r.r.r.r.r.r.5.', hard: 'r.r.o.r.r.r.o.5.', hell: 'r.rorororo.ror5.' }; // r root, o an octave up, 5 the fifth
 const SCALE = [0, 2, 3, 5, 7, 8, 10];                                                          // natural minor
 const CHORDS = [[0, 5, 2, 6], [0, 3, 5, 4], [0, 6, 5, 6], [5, 6, 0, 0], [0, 2, 6, 5], [0, 5, 3, 6]]; // one chord per bar
 const semitones = (degree) => 12 * Math.floor(degree / 7) + SCALE[((degree % 7) + 7) % 7];
@@ -117,7 +121,7 @@ export function makeSong(modeId, random = Math.random) {
       prevPitch = pitch;
       const got = place(t, lane, len);
       if (got >= 0) lane = got;
-      const chance = s === 0 ? mode.doubles : s === 8 && modeId === 'hard' ? mode.doubles / 2 : 0;
+      const chance = s === 0 ? mode.doubles : s === 8 && mode.doubles > 0.5 ? mode.doubles / 2 : 0;
       if (got >= 0 && random() < chance) place(t, 3 - got, 0);
     });
   }
@@ -133,7 +137,7 @@ export function makeSong(modeId, random = Math.random) {
 
   sounds.sort((x, y) => x.t - y.t);
   notes.sort((x, y) => x.t - y.t || x.lane - y.lane);
-  return { mode: modeId, bpm: mode.bpm, beat, approach: mode.approach, firstBar: start + bar, notes, sounds, length: end + 2.2 };
+  return { mode: modeId, bpm: mode.bpm, beat, bars: mode.bars, approach: mode.approach, firstBar: start + bar, notes, sounds, length: end + 2.2 };
 }
 
 // ---------------------------------------------------------------- judging (nothing is drawn here either)
@@ -204,7 +208,7 @@ export default {
   id: 'mania', name: 'Key Mania', icon: 'keyboard-music', color: '#818cf8', tag: 'Rhythm',
   desc: 'Notes fall down four lanes: hit each one right on the beat. A new tune every round.',
   help: 'D F J K or the arrow keys · on a phone tap the lanes · keep long notes held · P to pause',
-  variants: { easy: 'Easy', normal: 'Normal', hard: 'Hard' },
+  variants: { easy: 'Easy', normal: 'Normal', hard: 'Hard', hell: 'Hell' },
   create(stage, api) {
     stage.innerHTML = `
       <div class="mn-top">

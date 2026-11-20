@@ -122,6 +122,8 @@ const overlayOpen = () => !$('overlay').classList.contains('hidden');
 const showBest = () => { $('g-best').textContent = fmt(current, best.get(current, variant)); };
 
 const api = {
+  // What follows a question mark in the address, as in #hellword?w=…: a game can be opened with something to do.
+  query: {},
   score(v) { $('g-score').textContent = fmt(current, v); },
   status(t) { $('g-status').textContent = t || ''; },
   overlay: showOverlay,
@@ -169,9 +171,10 @@ function route() {
   if (inst && inst.destroy) inst.destroy();
   inst = null;
   hideOverlay();
-  const id = location.hash.slice(1);
+  const [id, query = ''] = location.hash.slice(1).split('?');
   if (RENAMED[id]) { location.replace('#' + RENAMED[id]); return; }
   const g = games.find((x) => x.id === id);
+  api.query = Object.fromEntries(new URLSearchParams(query));
   current = g || null;
   variant = g ? savedVariant(g) : null;
   $('home').classList.toggle('hidden', !!g);
@@ -189,6 +192,7 @@ function route() {
   $('g-score-label').textContent = g.scoreLabel || 'Score';
   $('g-best-label').textContent = g.bestLabel || 'Best';
   $('play').classList.toggle('no-score', !!g.noScore);
+  $('g-restart').classList.toggle('hidden', !!g.noRestart); // a game with nothing to start over does without the button
   showBest();
   start();
 }

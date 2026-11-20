@@ -1,4 +1,4 @@
-import { drawIcons } from '../util.js';
+import { copyText, drawIcons } from '../util.js';
 import { WORDS } from '../data/words.js';
 
 // ---------------------------------------------------------------- making things up (nothing is drawn here)
@@ -78,7 +78,7 @@ const COUNT = 10, KEPT = 'arcade:names:kept', STYLE = 'arcade:names:style';
 const escape = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 export default {
-  id: 'names', name: 'Name Forge', icon: 'wand-sparkles', color: '#a78bfa', tag: 'Words', since: '1.1', noScore: true,
+  id: 'names', name: 'Name Forge', icon: 'wand-sparkles', color: '#a78bfa', tag: 'Words', since: '1.1', noScore: true, noRestart: true,
   desc: 'Nicknames, fantasy names and made-up words, in English and in Russian. Click one to copy it.',
   help: 'Space or Enter makes a new batch · click a name to copy it · the star keeps it for later · keys 1 to 4 change the kind',
   create(stage) {
@@ -127,16 +127,7 @@ export default {
         while (b.scrollWidth > b.clientWidth && size > 10) b.style.fontSize = `${--size}px`;
       }
     }
-    async function copy(name) {
-      try { await navigator.clipboard.writeText(name); say(`Copied “${name}”`); return; } catch { /* no permission: the old way, then */ }
-      const box = document.createElement('textarea');
-      box.value = name; box.setAttribute('readonly', ''); box.style.cssText = 'position:fixed;opacity:0';
-      document.body.append(box); box.select();
-      let ok = false;
-      try { ok = document.execCommand('copy'); } catch { /* nothing more to try */ }
-      box.remove();
-      say(ok ? `Copied “${name}”` : 'This browser does not let the page copy. Select the name by hand.');
-    }
+    const copy = async (name) => say(await copyText(name) ? `Copied “${name}”` : 'This browser does not let the page copy. Select the name by hand.');
     function setStyle(id) {
       style = id;
       try { localStorage.setItem(STYLE, id); } catch { /* not vital */ }
@@ -168,7 +159,6 @@ export default {
         if (e.key === ' ' || e.key === 'Enter') { if (!e.repeat) make(); return true; }
         if (/^[1-4]$/.test(e.key)) { setStyle(Object.keys(STYLES)[Number(e.key) - 1]); return true; }
       },
-      restart: make,
       destroy() { alive = false; clearTimeout(msgTimer); },
     };
   },

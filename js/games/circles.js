@@ -8,8 +8,11 @@ import { createTally, createTransport } from '../rhythm.js';
 export const MODES = {
   easy: { gap: 0.28, radius: 0.088, approach: 1.3, flow: 0.5, windows: [0.07, 0.12, 0.17] },
   normal: { gap: 0.2, radius: 0.074, approach: 1.05, flow: 0.75, windows: [0.06, 0.105, 0.15] },
-  hard: { gap: 0.15, radius: 0.064, approach: 0.85, flow: 1, windows: [0.05, 0.095, 0.14] },
+  hard: { gap: 0.1, radius: 0.06, approach: 0.75, flow: 1.25, windows: [0.045, 0.085, 0.125] },
+  hell: { gap: 0.08, radius: 0.05, approach: 0.58, flow: 1.6, windows: [0.04, 0.075, 0.11] },
 };
+const STREAM = 0.135;     // circles that follow each other faster than this lie in a chain, each half over the one before
+const LINK = 1.2;         // how many radii lie between two circles of a chain
 const FOLLOW = 2.3;       // while a slider is held, the pointer may stray this many radii from the ball
 const LET_GO = 0.14;      // a slider may be let go this long before its end
 const STRAY = 0.2;        // and the pointer may be off the ball for this long before the slider is lost
@@ -17,17 +20,28 @@ const STRAY = 0.2;        // and the pointer may be off the ball for this long b
 // ---------------------------------------------------------------- where the circles go (nothing is drawn here)
 // Turns the notes of a tune into circles and sliders on a field that is 1 wide and 1 high. Every circle
 // lies a step away from the one before, a longer step after a longer pause, so the hand flows from one
-// to the next. A long note becomes a slider: a path the pointer has to follow while the note sounds.
+// to the next. Very quick notes make a chain of circles that bends gently to one side: a stream.
+// A long note becomes a slider: a path the pointer has to follow while the note sounds.
 export function makeChart(song, modeId, rnd = Math.random) {
   const mode = MODES[modeId], chart = [], inside = (x, y) => x >= 0 && x <= 1 && y >= 0 && y <= 1;
-  let x = 0.5, y = 0.5, heading = rnd() * Math.PI * 2, freeAt = -Infinity, endOfLast = -1, group = 0, number = 0, lastPart = -1;
+  let x = 0.5, y = 0.5, heading = rnd() * Math.PI * 2, freeAt = -Infinity, endOfLast = -1, group = 0, number = 0, lastPart = -1, bend = 0;
   for (const n of song.notes) {
     if (n.t < freeAt - 1e-6) continue; // too soon after the one before (or at the very same moment)
     const len = n.len >= 0.3 ? n.len : 0;
     const room = mode.radius * 2.9; // two circles this far apart do not cover each other
     const dist = clamp((n.t - endOfLast) * mode.flow, room, 0.55);
     const recent = chart.slice(-3, -1); // the circles before the last one are still on screen too
+    const before = chart[chart.length - 1];
     let spot = null;
+    if (before && !before.len && !len && n.t - before.t < STREAM) {
+      // the next circle of a chain: a short step on, turning the way the chain bends and away from the edge
+      if (!before.chain) bend = (rnd() - 0.5) * 1.1;
+      for (let attempt = 0; attempt < 14 && !spot; attempt++) {
+        const a = heading + bend + (attempt % 2 ? -1 : 1) * Math.ceil(attempt / 2) * 0.45;
+        const nx = x + Math.cos(a) * mode.radius * LINK, ny = y + Math.sin(a) * mode.radius * LINK;
+        if (inside(nx, ny)) { spot = { x: nx, y: ny, heading: a, chain: true }; if (attempt) bend = -bend; }
+      }
+    }
     for (let attempt = 0; attempt < 60 && !spot; attempt++) {
       const a = heading + (attempt < 3 ? (rnd() - 0.5) * 1.7 : rnd() * Math.PI * 2);
       const nx = x + Math.cos(a) * dist, ny = y + Math.sin(a) * dist;
@@ -46,7 +60,7 @@ export function makeChart(song, modeId, rnd = Math.random) {
     const part = Math.floor((n.t - song.firstBar) / (song.beat * 8) + 1e-6); // the numbers start again every two bars
     if (part !== lastPart) { lastPart = part; group++; number = 0; }
     number++;
-    chart.push({ t: n.t, len, x: spot.x, y: spot.y, path: spot.path || null, group, number });
+    chart.push({ t: n.t, len, x: spot.x, y: spot.y, path: spot.path || null, group, number, ...(spot.chain ? { chain: true } : {}) });
     [x, y] = spot.path ? spot.path[spot.path.length - 1] : [spot.x, spot.y];
     heading = spot.heading; endOfLast = n.t + len; freeAt = n.t + len + mode.gap;
   }
@@ -70,6 +84,10 @@ export function createRun(chart, modeId) {
   let next = 0, sx = 1, sy = 1, radius = 0.08, strayed = 0, lastT = 0;
   const far = (ax, ay, bx, by) => Math.hypot((ax - bx) * sx, (ay - by) * sy);
   const judge = (kind, o, x = o.x, y = o.y) => { tally.add(kind); run.events.push({ kind, x, y }); };
+  const lose = (o, t) => { // a circle that was not hit; a slider loses its second half with it
+    o.state = 'missed'; o.goneAt = t; judge('miss', o);
+    if (o.len) judge('miss', o, ...o.path[o.path.length - 1]);
+  };
 
   run.setField = (width, height, r) => { sx = width; sy = height; radius = r; };
   // Call on every frame with the time, where the pointer is and whether it is pressed.
@@ -83,18 +101,22 @@ export function createRun(chart, modeId) {
       else if (strayed > STRAY) { o.state = 'dropped'; run.held = null; judge('miss', o, bx, by); }
     }
     lastT = t;
-    for (let n = objs[next]; n && n.state === 'wait' && t > n.t + GOOD; n = objs[++next]) {
-      n.state = 'missed'; judge('miss', n);
-      if (n.len) judge('miss', n, ...n.path[n.path.length - 1]);
-    }
+    for (let n = objs[next]; n && n.state === 'wait' && t > n.t + GOOD; n = objs[++next]) lose(n, n.t + GOOD);
   };
   // A click, a tap or a key at time t with the pointer at (px, py). Only the earliest circle that is
-  // still waiting can be hit. Answers how good the hit was, 'early' for a click on it before its
-  // time, or null when the click hit nothing.
+  // still waiting can be hit, with one exception: once its moment has come, a click on the circle
+  // after it gives the earlier one up, so that one slip in a quick chain costs one circle and no more.
+  // Answers how good the hit was, 'early' for a click on a circle before its time, or null when the
+  // click hit nothing.
   run.press = (t, px, py) => {
     run.update(t, px, py, true);
-    const o = objs[next];
-    if (!o || o.state !== 'wait' || far(px, py, o.x, o.y) > radius) return null;
+    let o = objs[next];
+    if (!o || o.state !== 'wait') return null;
+    if (far(px, py, o.x, o.y) > radius) {
+      const after = objs[next + 1];
+      if (!after || t < o.t || t < after.t - GOOD || far(px, py, after.x, after.y) > radius) return null;
+      lose(o, t); next++; o = after;
+    }
     if (t < o.t - GOOD) return 'early';
     const off = Math.abs(t - o.t), kind = off <= PERFECT ? 'perfect' : off <= GREAT ? 'great' : 'good';
     next++;
@@ -115,7 +137,7 @@ export default {
   id: 'circles', name: 'Circles of Hell', icon: 'circle-dot', color: '#fb7185', tag: 'Rhythm', since: '1.1',
   desc: 'Circles light up to the music: click each one on the beat and follow the sliders. A new tune every round.',
   help: 'Aim with the mouse and click, or press Z or X · on a phone tap the circles · hold and follow a slider to its end · P to pause',
-  variants: { easy: 'Easy', normal: 'Normal', hard: 'Hard' },
+  variants: { easy: 'Easy', normal: 'Normal', hard: 'Hard', hell: 'Hell' },
   create(stage, api) {
     stage.innerHTML = `
       <div class="mn-top">
@@ -186,7 +208,7 @@ export default {
         const color = COLORS[o.group % COLORS.length], x = X(o.x), y = Y(o.y);
         const fadeIn = clamp((t - (o.t - approach)) / 0.3, 0, 1);
         const gone = o.state === 'missed' || o.state === 'dropped' || o.state === 'done';
-        const since = o.state === 'missed' ? t - (o.t + MODES[mode].windows[2]) : o.state === 'done' && !o.len ? t - o.hitAt : 0;
+        const since = o.state === 'missed' ? t - o.goneAt : o.state === 'done' && !o.len ? t - o.hitAt : 0;
         const alpha = o.state === 'missed' ? clamp(1 - since / 0.25, 0, 1) * 0.5 : fadeIn;
         if (o.len) {
           const bodyAlpha = (o.state === 'done' || o.state === 'dropped' ? clamp(1 - (t - (o.t + o.len)) / 0.25, 0, 0.5) : alpha) * (o.state === 'dropped' ? 0.4 : 1);

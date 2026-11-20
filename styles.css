@@ -358,6 +358,24 @@ a.btn-icon:hover { color: var(--accent2); border-color: color-mix(in srgb, var(-
 .hw-note { position:absolute; z-index:2; top:calc(var(--t) * .5 - 15px); left:50%; transform:translateX(-50%); width:max-content; max-width:min(92vw, 420px); padding:6px 14px; border-radius:99px; text-align:center; font-size:13px; font-weight:600; color:#1b0d0a; background:#f6f1ef; box-shadow:0 8px 24px rgba(0,0,0,.55); pointer-events:none; }
 .hw-note:empty { display:none; }
 .hw-keys { width:min(100%, 520px); display:flex; flex-direction:column; gap:6px; }
+.hw .mn-top { margin-bottom:0; }
+#hw-make.on { color:var(--accent2); border-color:color-mix(in srgb, var(--accent) 45%, var(--border)); }
+/* the page for a word of one's own takes the place of the board and the keys */
+.hw-own { display:none; width:min(100%, 420px); margin-top:16px; padding:22px 20px 18px; border-radius:16px; text-align:center; background:var(--surface); border:1px solid var(--border); }
+.hw.own .hw-own { display:block; }
+.hw.own .hw-board, .hw.own .hw-keys { display:none; }
+.hw-own [hidden] { display:none; }
+.hw-own h3 { font-size:18px; font-weight:600; }
+.hw-own p { margin-top:6px; font-size:13px; line-height:1.45; color:var(--muted); }
+.hw-own input { width:100%; max-width:250px; margin-top:16px; padding:10px 6px 10px 16px; text-align:center; font-size:28px; font-weight:700; letter-spacing:.32em; text-transform:uppercase; color:var(--text); background:var(--bg); border:2px solid #4a2e2c; border-radius:12px; outline:none; }
+.hw-own input:focus { border-color:var(--accent); }
+.hw-own input::placeholder { color:#4a3938; }
+.hw-own-go { display:flex; justify-content:center; gap:8px; margin-top:14px; }
+.hw-own .bt-tool span { display:inline; }
+.hw-own .hw-own-msg { min-height:20px; margin-top:12px; color:var(--text); }
+.hw-own-link { display:block; margin-top:6px; font-size:11px; line-height:1.4; color:var(--dim); word-break:break-all; user-select:all; -webkit-user-select:all; }
+.hw-own-back { margin-top:14px; font-size:13px; color:var(--muted); text-decoration:underline; text-underline-offset:3px; }
+.hw-own-back:hover { color:var(--text); }
 .hw-keys > div { display:flex; justify-content:center; gap:clamp(3px, 1vw, 6px); }
 .hw-keys button { flex:1 1 0; min-width:0; max-width:44px; height:clamp(38px, 6vh, 54px); padding:0; display:grid; place-items:center; border-radius:7px; font-size:15px; font-weight:600; text-transform:uppercase; color:#ece6e5; background:#3b2a29; touch-action:manipulation; user-select:none; -webkit-user-select:none; transition:background .15s; }
 .hw-keys button:active { filter:brightness(1.3); }

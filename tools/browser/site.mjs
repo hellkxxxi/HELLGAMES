@@ -9,6 +9,7 @@ const GAMES = [
   ['reaction', 'Reaction Test'], ['whack', 'Whack-a-Mole'], ['names', 'Name Forge'],
 ];
 const NO_SCORE = ['beats', 'sand', 'draw', 'names'];                    // nothing to count in these
+const NO_RESTART = ['names'];                                           // and nothing to start over in these
 const TOP_WIN = ['slots', 'dice', 'soulmines'];                         // the casino keeps the biggest win instead of a best score
 const NEW = ['circles', 'catcher', 'hellword', 'pong', 'slots', 'dice', 'soulmines', 'beats', 'sand', 'mahjong', 'names']; // came with this version
 const KINDS = [['All', 26], ['Skill', 3], ['Rhythm', 3], ['Words', 3], ['Puzzle', 7], ['Arcade', 4], ['Casino', 3], ['Creative', 3]];
@@ -28,6 +29,7 @@ async function playThrough(page, t, where) {
     t.equal(await page.title(), `${name} — ${SITE}`, `${where} ${id}: tab title`);
     t.check((await page.$eval('#g-help', (e) => e.textContent)).length > 10, `${where} ${id}: has a line of help`);
     t.check(await page.$eval('#stage', (s) => s.children.length > 0), `${where} ${id}: something is on the stage`);
+    t.equal(await page.$eval('#g-restart', (b) => b.getClientRects().length > 0), !NO_RESTART.includes(id), `${where} ${id}: the Restart button is ${NO_RESTART.includes(id) ? 'not ' : ''}there`);
     if (await overlayOpen(page)) {
       await sleep(350); // a fresh overlay ignores clicks for a moment
       await page.click('#ov-btn');
