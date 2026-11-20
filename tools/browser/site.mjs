@@ -2,17 +2,22 @@
 import { sleep } from '../lib.mjs';
 
 const GAMES = [
-  ['aim', 'Aim Trainer'], ['mania', 'Key Mania'], ['circles', 'Circles of Hell'], ['catcher', 'Soul Catcher'], ['helltype', 'Helltype'], ['hellword', 'Hellword'],
-  ['helltris', 'Helltris'], ['hellman', 'Hell-Man'], ['hellybird', 'Helly Bird'], ['pong', 'Hell Pong'], ['snake', 'Snake'],
-  ['slots', 'Soul Slots'], ['dice', 'Soul Dice'], ['soulmines', 'Soul Mines'], ['beats', 'Beat Maker'], ['sand', 'Sandbox'], ['draw', 'Sketchpad'],
-  ['mahjong', 'Mahjong'], ['lines', 'Lines 98'], ['sudoku', 'Sudoku'], ['2048', '2048'], ['mines', 'Minesweeper'], ['memory', 'Memory Match'],
-  ['reaction', 'Reaction Test'], ['whack', 'Whack-a-Mole'], ['names', 'Name Forge'],
+  ['aim', 'Aim Trainer'], ['mania', 'Key Mania'], ['circles', 'Circles of Hell'], ['catcher', 'Soul Catcher'], ['helltype', 'Helltype'],
+  ['hellword', 'Hellword'], ['helltris', 'Helltris'], ['hellman', 'Hell-Man'], ['hellybird', 'Helly Bird'], ['run', 'Hell Run'],
+  ['pong', 'Hell Pong'], ['snake', 'Snake'], ['rain', 'Brimstone'], ['slots', 'Soul Slots'], ['dice', 'Soul Dice'],
+  ['soulmines', 'Soul Mines'], ['beats', 'Beat Maker'], ['sand', 'Sandbox'], ['draw', 'Sketchpad'], ['mahjong', 'Mahjong'],
+  ['maze', 'Labyrinth'], ['lines', 'Lines 98'], ['sudoku', 'Sudoku'], ['2048', '2048'], ['mines', 'Minesweeper'],
+  ['memory', 'Memory Match'], ['stroop', 'Stroop Test'], ['odd', 'Odd One Out'], ['reaction', 'Reaction Test'], ['whack', 'Whack-a-Mole'],
+  ['rps', 'Rock Paper Scissors'], ['sens', 'Sens Converter'], ['names', 'Name Forge'],
 ];
-const NO_SCORE = ['beats', 'sand', 'draw', 'names'];                    // nothing to count in these
-const NO_RESTART = ['names'];                                           // and nothing to start over in these
-const TOP_WIN = ['slots', 'dice', 'soulmines'];                         // the casino keeps the biggest win instead of a best score
-const NEW = ['circles', 'catcher', 'hellword', 'pong', 'slots', 'dice', 'soulmines', 'beats', 'sand', 'mahjong', 'names']; // came with this version
-const KINDS = [['All', 26], ['Skill', 3], ['Rhythm', 3], ['Words', 3], ['Puzzle', 7], ['Arcade', 4], ['Casino', 3], ['Creative', 3]];
+const NO_SCORE = ['beats', 'sand', 'draw', 'sens', 'names']; // nothing to count in these
+const NO_RESTART = ['sens', 'names']; // and nothing to start over in these
+const TOP_WIN = ['slots', 'dice', 'soulmines']; // the casino keeps the biggest win instead of a best score
+const NEW = [
+  'circles', 'catcher', 'hellword', 'run', 'pong', 'rain', 'slots', 'dice', 'soulmines', 'beats', 'sand', 'mahjong',
+  'maze', 'stroop', 'odd', 'rps', 'sens', 'names',
+]; // came with this version
+const KINDS = [['All', 33], ['Skill', 7], ['Rhythm', 3], ['Words', 2], ['Puzzle', 8], ['Arcade', 6], ['Casino', 3], ['Creative', 4]];
 const SITE = 'hellgames by hellkai', REPO = 'https://github.com/hellkxxxi/HELLGAMES';
 const OLD_NAMES = /tetris|pac-?man|flappy/i;
 

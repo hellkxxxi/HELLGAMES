@@ -25,14 +25,21 @@ import mahjong from './games/mahjong.js';
 import names from './games/names.js';
 import circles from './games/circles.js';
 import catcher from './games/catcher.js';
+import sens from './games/sens.js';
+import stroop from './games/stroop.js';
+import odd from './games/odd.js';
+import rps from './games/rps.js';
+import run from './games/run.js';
+import rain from './games/rain.js';
+import maze from './games/maze.js';
 
 const SITE = 'hellgames by hellkai';
 const VERSION = '1.1.0';
 // The games appear on the home page in this order. The filter buttons above them are the tags of the
 // games, in the order in which the tags first turn up in this list.
 const games = [
-  aim, mania, circles, catcher, helltype, hellword, helltris, hellman, hellybird, pong, snake, slots, dice, soulmines,
-  beats, sand, draw, mahjong, lines, sudoku, g2048, mines, memory, reaction, whack, names,
+  aim, mania, circles, catcher, helltype, hellword, helltris, hellman, hellybird, run, pong, snake, rain, slots, dice, soulmines,
+  beats, sand, draw, mahjong, maze, lines, sudoku, g2048, mines, memory, stroop, odd, reaction, whack, rps, sens, names,
 ];
 // A game is marked "New" on the home page while its `since` is the current version without the last number.
 const SERIES = VERSION.split('.').slice(0, 2).join('.');
@@ -156,6 +163,14 @@ const api = {
   },
 };
 
+// A long name gets smaller letters on a narrow screen rather than being cut short.
+function fitTitle() {
+  const title = $('g-title');
+  title.style.fontSize = '';
+  for (let size = parseFloat(getComputedStyle(title).fontSize); title.scrollWidth > title.clientWidth && size > 11;) title.style.fontSize = `${--size}px`;
+}
+window.addEventListener('resize', () => { if (current) fitTitle(); });
+
 function start() {
   if (inst && inst.destroy) inst.destroy();
   hideOverlay();
@@ -194,6 +209,7 @@ function route() {
   $('play').classList.toggle('no-score', !!g.noScore);
   $('g-restart').classList.toggle('hidden', !!g.noRestart); // a game with nothing to start over does without the button
   showBest();
+  fitTitle();
   start();
 }
 

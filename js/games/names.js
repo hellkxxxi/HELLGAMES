@@ -78,7 +78,7 @@ const COUNT = 10, KEPT = 'arcade:names:kept', STYLE = 'arcade:names:style';
 const escape = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 export default {
-  id: 'names', name: 'Name Forge', icon: 'wand-sparkles', color: '#a78bfa', tag: 'Words', since: '1.1', noScore: true, noRestart: true,
+  id: 'names', name: 'Name Forge', icon: 'wand-sparkles', color: '#a78bfa', tag: 'Creative', since: '1.1', noScore: true, noRestart: true,
   desc: 'Nicknames, fantasy names and made-up words, in English and in Russian. Click one to copy it.',
   help: 'Space or Enter makes a new batch · click a name to copy it · the star keeps it for later · keys 1 to 4 change the kind',
   create(stage) {

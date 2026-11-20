@@ -2,7 +2,7 @@
 
 ## 1.1.0
 
-Eleven new games, which makes twenty-six.
+Eighteen new games, which makes thirty-three.
 
 ### New
 

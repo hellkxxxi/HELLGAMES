@@ -3,7 +3,7 @@
 <h1 align="center">hellgames</h1>
 
 <p align="center">
-  Twenty-six free mini-games that open straight in the browser, on a computer or a phone.<br>
+  Thirty-three free mini-games that open straight in the browser, on a computer or a phone.<br>
   No installs, no ads, no sign-up.
 </p>
 
@@ -19,13 +19,13 @@ The buttons above the list on the home page show one kind of game at a time.
 
 ### Rhythm
 
-Each of the three plays a tune that is composed anew for every round, on Easy, Normal or Hard.
+Each of the three plays a tune that is composed anew for every round, on four levels from Easy to Hell.
 
 | Game | What you do | Controls |
 | --- | --- | --- |
 | **Key Mania** | Notes fall down four lanes. Hit each one on the beat and keep the long ones held. | `D` `F` `J` `K` or the arrow keys; on a phone, tap the lanes |
-| **Circles of Hell** | Circles appear all over the field. Click each one as its ring closes on it, and follow the sliders to their end. | Mouse and click, or `Z` `X`; on a phone, tap |
-| **Soul Catcher** | Squares fly at you down a tunnel. Be on the right cell of the grid when each one arrives. Nothing is clicked. | Mouse or finger; or the number pad, or `Q` `W` `E` / `A` `S` `D` / `Z` `X` `C` |
+| **Circles of Hell** | Circles appear all over the field. Click each one as its ring closes on it, and follow the sliders to their end. The harder levels come in streams. | Mouse and click, or `Z` `X`; on a phone, tap |
+| **Soul Catcher** | Squares fly at you down a tunnel. Be on the right cell of the grid when each one arrives, and drag the cursor along the snakes. Nothing is clicked. | Mouse or finger; or the number pad, or `Q` `W` `E` / `A` `S` `D` / `Z` `X` `C` |
 
 ### Skill
 
@@ -34,14 +34,17 @@ Each of the three plays a tune that is composed anew for every round, on Easy, N
 | **Aim Trainer** | Click the targets as fast as you can for 30 seconds. Three modes: Gridshot, Flick and Precision. | Mouse or finger |
 | **Reaction Test** | Click the moment the screen turns green. The score is the average of five tries. | Click, tap or `Space` |
 | **Whack-a-Mole** | Little devils pop out of lava pits. Bop as many as you can in 30 seconds. | Click, tap or the number keys |
+| **Stroop Test** | The word says GREEN, the ink is red. Pick the colour of the ink, not the one the word names. 30 seconds, in English or Russian. | Click, tap or `1` to `4` |
+| **Odd One Out** | One tile is not like the others: a shade off, or another letter. Every find makes the field bigger and the difference smaller. | Mouse or finger |
+| **Rock Paper Scissors** | Against the devil, who learns your habits and bets on them. Wins in a row count. | Click, tap, `1` `2` `3` or `R` `P` `S` |
+| **Sens Converter** | A tool rather than a game: it carries a mouse sensitivity from one shooter to another (Valorant, Counter-Strike 2, Apex Legends, Fortnite, Overwatch 2, Call of Duty, Rainbow Six Siege, Team Fortress 2) and shows how far the mouse travels for a full turn. | Type the numbers; click a result to copy it |
 
 ### Words
 
 | Game | What you do | Controls |
 | --- | --- | --- |
 | **Helltype** | A typing-speed test: 15, 30 or 60 seconds of English or Russian words, scored in words per minute. | Any keyboard, including the one on a phone |
-| **Hellword** | Guess a five-letter word in six tries, in English or in Russian. Each language keeps a winning streak of its own. | Any keyboard, or the one on the screen |
-| **Name Forge** | A toy rather than a game: it makes up nicknames, fantasy names and words that only sound real, in English and Russian. | Click a name to copy it, `Space` for more |
+| **Hellword** | Guess a five-letter word in six tries, in English or in Russian. Each language keeps a winning streak of its own, and a word of your own can be sent to a friend as a link. | Any keyboard, or the one on the screen |
 
 ### Puzzle
 
@@ -49,6 +52,7 @@ Each of the three plays a tune that is composed anew for every round, on Easy, N
 | --- | --- | --- |
 | **Helltris** | Falling blocks with a ghost piece, a hold slot and a preview of the next three pieces. | Arrow keys, `Space` to drop, `C` to hold; buttons on a phone |
 | **Mahjong** | Mahjong solitaire: clear the table by taking free tiles in matching pairs. Two layouts, hints, shuffle and undo. Every deal can be won. | Mouse or finger |
+| **Labyrinth** | A new maze every time, in three sizes. One push and the devil runs on to the next fork; the clock runs too. | Arrow keys, `W` `A` `S` `D` or swipes |
 | **Lines 98** | Move balls to line up five of one colour. Three more drop in after every move. | Mouse or finger |
 | **Sudoku** | Three levels with pencil notes, hints and undo. Every puzzle has exactly one solution. | Mouse or finger, number keys |
 | **2048** | Slide and merge matching tiles until you reach 2048. | Arrow keys, `W` `A` `S` `D` or swipes |
@@ -61,6 +65,8 @@ Each of the three plays a tune that is composed anew for every round, on Easy, N
 | --- | --- | --- |
 | **Hell-Man** | Clear a maze of dots while four ghosts, each with a character of its own, hunt you. | Arrow keys, `W` `A` `S` `D` or swipes |
 | **Helly Bird** | Flap a little devil between the pillars of hell. One touch and it is over. | Click, tap or `Space` |
+| **Hell Run** | A little devil runs through hell, faster and faster. Jump the flames, duck under the fireballs. | `Space` or a tap to jump, `↓` to duck |
+| **Brimstone** | Souls rain down on hell, and so do burning rocks. Catch the souls and dodge the rocks: three lives. | Mouse, finger or the arrow keys |
 | **Hell Pong** | First to seven, against the computer on three levels or against a friend on the same screen. | Mouse, finger, `W` `S` or the arrow keys |
 | **Snake** | Eat, grow, and don't bite your own tail. | Arrow keys, `W` `A` `S` `D` or swipes |
 
@@ -84,6 +90,7 @@ The odds are written down in the code and checked by the tests: in the long run 
 | **Beat Maker** | Switch on squares to build a loop of drums, bass and melody. All the notes belong to one scale, so nothing sounds wrong. | Mouse or finger, `Space` to play |
 | **Sandbox** | Pour sand, water, oil and lava, build with stone and wood, set it on fire and watch what happens. | Mouse or finger; `1` to `8` pick a material |
 | **Sketchpad** | A blank page, a brush, an eraser and a paint bucket. The drawing can be saved as a picture. | Mouse, pen or finger |
+| **Name Forge** | A toy rather than a game: it makes up nicknames, fantasy names and words that only sound real, in English and Russian. | Click a name to copy it, `Space` for more |
 
 Every game lists its controls under the playing field. `Esc` always leads back to the list of games.
 
