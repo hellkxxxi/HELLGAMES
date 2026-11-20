@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { makeSong } from '../../js/games/mania.js';
-import { MAX_SCORE, createTally, grade } from '../../js/rhythm.js';
+import { MAX_SCORE, createTally, grade, semitones } from '../../js/rhythm.js';
 import * as circles from '../../js/games/circles.js';
 import * as catcher from '../../js/games/catcher.js';
 import { seeded } from './seeded.mjs';
@@ -126,16 +126,16 @@ test('Circles of Hell: what a click can hit', () => {
 // ---------------------------------------------------------------- Soul Catcher
 test('Soul Catcher: the squares of a tune', () => {
   for (const mode of MODES) for (const seed of [1, 2, 3]) {
-    const rnd = seeded(seed), song = makeSong(mode, rnd), chart = catcher.makeChart(song, mode, rnd);
-    const m = catcher.MODES[mode];
-    assert.ok(chart.length > 40, `${mode} ${seed}: ${chart.length} squares`);
+    const rnd = seeded(seed), song = makeSong(mode, rnd), chart = catcher.makeChart(song, mode, rnd), m = catcher.MODES[mode];
+    const melody = song.sounds.filter((s) => s.kind === 'lead').map((s) => s.t), sixteenth = song.beat / 4;
+    assert.deepEqual(chart.filter((n) => !n.fill).map((n) => n.t), melody, `${mode} ${seed}: every note of the melody has a square, and no square is made up beside those of the fills`);
     let same = 0;
     chart.forEach((n, i) => {
       assert.ok([0, 1, 2].includes(n.col) && [0, 1, 2].includes(n.row), 'on the grid');
       assert.ok(n.t < song.length, 'before the tune ends');
       if (!i) return;
       const prev = chart[i - 1], since = n.t - prev.t, step = Math.max(Math.abs(n.col - prev.col), Math.abs(n.row - prev.row));
-      assert.ok(since >= m.gap - 1e-6, `${mode} ${seed}: time to get to square ${i}`);
+      assert.ok(since >= sixteenth - 1e-6, `${mode} ${seed}: never two squares closer than a sixteenth (square ${i})`);
       if (since < 0.55 && !m.jump) assert.ok(step <= 1 || (prev.col === 1 && prev.row === 1), `${mode} ${seed}: a quick note is one step away (square ${i})`);
       if (since < 0.15) assert.ok(step <= 1 || (prev.col === 1 && prev.row === 1), `${mode} ${seed}: no leap across the grid in a sixteenth (square ${i})`);
       same = step === 0 ? same + 1 : 0;
@@ -143,14 +143,13 @@ test('Soul Catcher: the squares of a tune', () => {
     });
     assert.ok(new Set(chart.map((n) => n.row * 3 + n.col)).size === 9, `${mode} ${seed}: every cell is used`);
 
-    // the snakes: rows of quick squares, each in the cell beside the one before
+    // the snakes: rows of squares a sixteenth apart (or added for a fill), each in the cell beside the one before
     const snakes = new Map();
     chart.forEach((n, i) => {
-      assert.equal(!!n.link, !!n.snake && snakes.has(n.snake), 'every square of a snake but its head is a link');
       if (!n.snake) return;
-      if (!snakes.has(n.snake)) snakes.set(n.snake, []);
-      const body = snakes.get(n.snake), prev = chart[i - 1];
-      if (n.link) {
+      const prev = chart[i - 1], body = snakes.get(n.snake) || [];
+      snakes.set(n.snake, body);
+      if (body.length) {
         assert.equal(prev.snake, n.snake, 'a snake has no gaps');
         assert.equal(Math.abs(n.col - prev.col) + Math.abs(n.row - prev.row), 1, `${mode} ${seed}: square ${i} of a snake is beside the one before`);
         if (body.length > 1) assert.ok(body.at(-2).col !== n.col || body.at(-2).row !== n.row, `${mode} ${seed}: a snake never turns straight back (square ${i})`);
@@ -159,9 +158,36 @@ test('Soul Catcher: the squares of a tune', () => {
     });
     const lengths = [...snakes.values()].map((body) => body.length);
     assert.ok(lengths.every((n) => n >= 3), 'a snake has three squares or more');
+    chart.forEach((n, i) => { if (i && n.t - chart[i - 1].t <= sixteenth * 1.05 && !n.snake) assert.ok(!chart[i - 1].snake && !(chart[i + 1] && chart[i + 1].t - n.t <= sixteenth * 1.05), `${mode} ${seed}: three notes a sixteenth apart always make a snake (square ${i})`); });
+    // the squares that are added where the drums play a fill
+    const added = chart.filter((n) => n.fill), fills = new Set([...Array(song.bars).keys()].filter((b) => b % 8 === 7 || b === song.bars - 1)).size;
+    assert.equal(added.length, m.fill ? fills * (8 / m.fill - 1) : 0, `${mode} ${seed}: ${added.length} squares for ${fills} fills`);
+    assert.ok(added.every((n) => n.snake), 'every added square is part of a snake');
     if (mode === 'easy') assert.equal(lengths.length, 0, 'easy: no snakes');
-    else if (mode === 'normal') assert.ok(lengths.length >= 3 && lengths.every((n) => n === 5), `normal ${seed}: a snake of five with every fill of the drums (${lengths})`);
+    else if (mode === 'normal') assert.ok(lengths.filter((n) => n === 5).length >= fills - 1 && lengths.every((n) => n === 3 || n === 5), `normal ${seed}: short snakes for three quick notes, and one of five with every fill (${lengths})`);
     else assert.ok(lengths.length > 20 && Math.max(...lengths) >= 9, `${mode} ${seed}: many snakes, some of them long (${lengths.length}, up to ${Math.max(...lengths)})`);
+  }
+});
+
+test('Soul Catcher: every square is heard, to the end of its snake', () => {
+  for (const mode of MODES) for (const seed of [1, 2, 3]) {
+    const rnd = seeded(seed), song = makeSong(mode, rnd), before = JSON.stringify(song.sounds);
+    const chart = catcher.makeChart(song, mode, rnd), sounds = catcher.soundsFor(song, chart);
+    assert.equal(JSON.stringify(song.sounds), before, 'the tune itself is left as it was');
+    assert.ok(sounds.every((s, i) => !i || s.t >= sounds[i - 1].t), 'the sounds are in the order in which they are played');
+    const notes = sounds.filter((s) => s.kind === 'lead'), added = chart.filter((n) => n.fill);
+    assert.equal(sounds.length, song.sounds.length + added.length, `${mode} ${seed}: one new note for every added square`);
+    assert.deepEqual(notes.map((s) => s.t), chart.map((n) => n.t), `${mode} ${seed}: a note of the melody sounds with every square, and none without one`);
+    const onScale = new Set(Array.from({ length: 60 }, (_, d) => song.root + semitones(d - 24))), stepOf = (midi) => [...onScale].sort((a, b) => a - b).indexOf(midi);
+    assert.ok(notes.every((s) => onScale.has(s.midi)), `${mode} ${seed}: every note is on the scale of the tune`);
+    chart.forEach((n, i) => {
+      if (!n.fill) return;
+      const note = notes[i], next = notes[i + 1], prev = notes[i - 1];
+      assert.equal(Math.abs(stepOf(next.midi) - stepOf(note.midi)), 1, `${mode} ${seed}: the run goes step by step into the note after it (square ${i})`);
+      if (chart[i + 1].fill && chart[i - 1].fill) assert.equal(stepOf(next.midi) - stepOf(note.midi), stepOf(note.midi) - stepOf(prev.midi), 'and keeps its direction');
+      assert.ok(prev.t + prev.dur <= n.t + 1e-9, `${mode} ${seed}: the note before has ended when the next one of the run begins (square ${i})`);
+      assert.ok(note.midi >= 36 && note.midi <= 100 && note.dur > 0 && note.dur < song.beat, 'a pitch and a length that can be played');
+    });
   }
 });
 

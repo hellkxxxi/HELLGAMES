@@ -270,6 +270,56 @@ async function screenshots() {
     await page.mouse.move(box.x + head[0] * box.width + 3, box.y + head[1] * box.width + 2);
     await sleep(60);
   } });
+  await shoot('onetap.png', '#onetap', { seed: 4, play: async (page) => {
+    // The clock is taken over, so that the picture shows an exact moment: three runners are shot with the head
+    // on the sights, and the picture is taken a twentieth of a second after the third shot.
+    const box = await (await page.$('#ot-c')).boundingBox();
+    await page.evaluate(() => { window.clock = performance.now(); performance.now = () => window.clock; });
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    await page.evaluate(() => new Promise((done) => {
+      const cv = document.querySelector('#ot-c'), ctx = cv.getContext('2d'), W = cv.width, u = cv.height / 9;
+      const head = () => { // where the middle of a face is, in heads from the sights
+        const row = ctx.getImageData(0, Math.round(3.35 * u), W, 1).data;
+        let lo = -1, hi = -1;
+        for (let x = 0; x < W; x++) { const r = row[x * 4], g = row[x * 4 + 1], b = row[x * 4 + 2]; if (r > 225 && g > 55 && g < 85 && b > 55 && b < 85) { if (lo < 0) lo = x; hi = x; } }
+        return lo < 0 ? null : ((lo + hi) / 2 - W / 2) / u;
+      };
+      const look = () => {
+        const at = head();
+        if (document.querySelector('#g-score').textContent === '3') { window.clock += 50; requestAnimationFrame(() => requestAnimationFrame(done)); return; }
+        if (at !== null && Math.abs(at) <= 0.3) cv.dispatchEvent(new PointerEvent('pointerdown', { pointerType: 'mouse', bubbles: true, cancelable: true })); // a click with no bullet in does nothing
+        window.clock += at === null ? 40 : Math.abs(at) > 1.1 ? 20 : 4;
+        requestAnimationFrame(look);
+      };
+      requestAnimationFrame(look);
+    }));
+  } });
+  await shoot('catcher.png', '#catcher', { seed: 6, play: async (page) => {
+    // The hard level is chosen and the page loaded once more. Then, as in Key Mania, the tune and its squares
+    // are worked out a second time, and the cursor is led from square to square into the first long snake.
+    await page.evaluate(() => localStorage.setItem('arcade:variant:catcher', 'hard'));
+    await page.reload({ waitUntil: 'load' });
+    await sleep(700);
+    const wait = await page.evaluate(async (seed) => {
+      const { makeSong } = await import('./js/games/mania.js');
+      const { makeChart } = await import('./js/games/catcher.js');
+      const rnd = window.chance(seed), song = makeSong('hard', rnd), chart = makeChart(song, 'hard', rnd);
+      const cv = document.querySelector('#ct-c'), r = cv.getBoundingClientRect(), cell = Math.min(r.width, r.height) * 0.9 / 3;
+      const at = (col, row) => ({ clientX: r.left + r.width / 2 + (col - 1) * cell, clientY: r.top + r.height / 2 + (row - 1) * cell });
+      const fire = (type, col, row) => cv.dispatchEvent(new PointerEvent(type, { ...at(col, row), pointerId: 1, pointerType: 'mouse', button: 0, bubbles: true, cancelable: true }));
+      fire('pointerdown', 1, 1); fire('pointerup', 1, 1); // the first click starts the tune
+      const started = performance.now(), until = (seconds) => seconds * 1000 - (performance.now() - started);
+      // the first snake of ten squares or more, and the moment its third square arrives
+      let first = 0;
+      const long = chart.findIndex((n, i) => { if (!n.snake || !i || n.t - chart[i - 1].t > 0.15) first = i; return i - first >= 9; });
+      const end = chart[first + 2].t;
+      if (long < 0) throw new Error('no long snake in this tune');
+      for (const n of chart) { if (n.t > end) break; setTimeout(() => fire('pointermove', n.col, n.row), until(n.t - 0.06)); }
+      return until(end);
+    }, 6);
+    await sleep(wait);
+  } });
+  await shoot('sens.png', '#sens');
   await server.close();
 }
 

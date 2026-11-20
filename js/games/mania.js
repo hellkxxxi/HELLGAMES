@@ -38,7 +38,8 @@ const DRUMS = {
 const BASS = { easy: 'r.......r.....r.', normal: 'r.r.r.r.r.r.r.5.', hard: 'r.r.o.r.r.r.o.5.', hell: 'r.rorororo.ror5.' }; // r root, o an octave up, 5 the fifth
 const SCALE = [0, 2, 3, 5, 7, 8, 10];                                                          // natural minor
 const CHORDS = [[0, 5, 2, 6], [0, 3, 5, 4], [0, 6, 5, 6], [5, 6, 0, 0], [0, 2, 6, 5], [0, 5, 3, 6]]; // one chord per bar
-const semitones = (degree) => 12 * Math.floor(degree / 7) + SCALE[((degree % 7) + 7) % 7];
+// How many semitones above the keynote a step of the scale lies; step 7 is the keynote an octave up, step -1 the note below it.
+export const semitones = (degree) => 12 * Math.floor(degree / 7) + SCALE[((degree % 7) + 7) % 7];
 
 // ---------------------------------------------------------------- composing a tune (nothing is played or drawn here)
 // Returns the notes to hit and every sound of the backing track, both made from the same melody, so
@@ -137,7 +138,8 @@ export function makeSong(modeId, random = Math.random) {
 
   sounds.sort((x, y) => x.t - y.t);
   notes.sort((x, y) => x.t - y.t || x.lane - y.lane);
-  return { mode: modeId, bpm: mode.bpm, beat, bars: mode.bars, approach: mode.approach, firstBar: start + bar, notes, sounds, length: end + 2.2 };
+  // root: the keynote of the melody as a MIDI number; every note of the melody is root + semitones(some step)
+  return { mode: modeId, bpm: mode.bpm, beat, bars: mode.bars, approach: mode.approach, firstBar: start + bar, root: leadRoot, notes, sounds, length: end + 2.2 };
 }
 
 // ---------------------------------------------------------------- judging (nothing is drawn here either)

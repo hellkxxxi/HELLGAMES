@@ -3,7 +3,7 @@
 <h1 align="center">hellgames</h1>
 
 <p align="center">
-  Forty-one free mini-games that open straight in the browser, on a computer or a phone.<br>
+  Forty-two free mini-games that open straight in the browser, on a computer or a phone.<br>
   No installs, no ads, no sign-up.
 </p>
 
@@ -25,7 +25,7 @@ Each of the three plays a tune that is composed anew for every round, on four le
 | --- | --- | --- |
 | **Key Mania** | Notes fall down four lanes. Hit each one on the beat and keep the long ones held. | `D` `F` `J` `K` or the arrow keys; on a phone, tap the lanes |
 | **Circles of Hell** | Circles appear all over the field. Click each one as its ring closes on it, and follow the sliders to their end. The harder levels come in streams. | Mouse and click, or `Z` `X`; on a phone, tap |
-| **Soul Catcher** | Squares fly at you down a tunnel. Be on the right cell of the grid when each one arrives, and drag the cursor along the snakes. Nothing is clicked. | Mouse or finger; or the number pad, or `Q` `W` `E` / `A` `S` `D` / `Z` `X` `C` |
+| **Soul Catcher** | Squares fly at you down a tunnel, one for every note of the tune. Be on the right cell of the grid when each one arrives; quick notes come as snakes of squares that wind across the grid. Nothing is clicked. | Mouse or finger; or the number pad, or `Q` `W` `E` / `A` `S` `D` / `Z` `X` `C` |
 
 ### Skill
 
@@ -35,10 +35,11 @@ Each of the three plays a tune that is composed anew for every round, on four le
 | **Reaction Test** | Click the moment the screen turns green. The score is the average of five tries. | Click, tap or `Space` |
 | **Whack-a-Mole** | Little devils pop out of lava pits. Bop as many as you can in 30 seconds. | Click, tap or the number keys |
 | **Hold the Angle** | For players of tactical shooters: somebody leans out of cover, and whoever fires first wins. A shot in the head ends it at once. The score is the average time of twelve duels. | Mouse and click, or tap |
+| **One Tap** | Also for shooter players: the sights hold a gap at head height and do not move. Somebody runs across, and one click at the right moment is a headshot. One bullet for each runner; the gap can be narrow, medium or wide, and there are four speeds. | Click, tap or `Space` |
 | **Last Hit** | For players of MOBAs: strike the blow that finishes a creep, with a sword or with a bow. Too early is wasted, too late and the creep is lost. | Click or tap a creep |
 | **Stroop Test** | The word says GREEN, the ink is red. Pick the colour of the ink, not the one the word names. 30 seconds, in English or Russian. | Click, tap or `1` to `4` |
 | **Odd One Out** | One tile is not like the others: a shade off, or another letter. Every find makes the field bigger and the difference smaller. | Mouse or finger |
-| **Sens Converter** | A tool rather than a game: it carries a mouse sensitivity from one shooter to another (Valorant, Counter-Strike 2, Apex Legends, Fortnite, Overwatch 2, Call of Duty, Rainbow Six Siege, Team Fortress 2) and shows how far the mouse travels for a full turn. | Type the numbers; click a result to copy it |
+| **Sens Converter** | A tool rather than a game: it carries a mouse sensitivity from one shooter to another and shows how far the mouse travels for a full turn. It knows 45 games, from Valorant, Counter-Strike 2, Apex Legends and Fortnite to Marvel Rivals, Deadlock and THE FINALS; the numbers are the ones published by [sensitivitymatch.com](https://sensitivitymatch.com/methodology/). | Type the numbers; click a result to copy it |
 
 ### Words
 
@@ -117,6 +118,11 @@ Every game lists its controls under the playing field. `Esc` always leads back t
     <td><img src="docs/gems.png" alt="Hellgems: a board of gems in six shapes and colours"></td>
     <td><img src="docs/lasthit.png" alt="Last Hit: two rows of creeps with health bars, and gold for the one just finished"></td>
     <td><img src="docs/peek.png" alt="Hold the Angle: a devil looks out from behind a barrel in a doorway, the sights on its head"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/onetap.png" alt="One Tap: a devil shot in the gap between two walls, with the sights on its head"></td>
+    <td><img src="docs/catcher.png" alt="Soul Catcher: a snake of green squares flying down a tunnel towards the grid"></td>
+    <td><img src="docs/sens.png" alt="Sens Converter: Valorant 0.4 carried over to other shooters, two results in a row"></td>
   </tr>
   <tr>
     <td><img src="docs/circles.png" alt="Circles of Hell: a slider being followed, and a numbered circle with a ring closing on it"></td>

@@ -2,7 +2,7 @@
 
 ## 1.1.0
 
-Twenty-six new games, which makes forty-one.
+Twenty-seven new games, which makes forty-two.
 
 ### New
 
@@ -11,8 +11,8 @@ Rhythm
 - **Circles of Hell**, played with the pointer: circles appear to the music, each one is clicked as its
   ring closes on it, and sliders are followed to their end.
 - **Soul Catcher**, a rhythm game without a single click: squares fly at you down a tunnel, and the cursor
-  has to be on the right cell of the grid when each one arrives. Rows of quick squares form snakes that
-  the cursor is dragged along.
+  has to be on the right cell of the grid when each one arrives. Every note of the tune has a square of its
+  own, and quick notes come as snakes of squares that wind across the grid.
 - A fourth level, **Hell**, in all three rhythm games, with a tune at 172 beats a minute. Hard itself is
   harder in Circles of Hell and Soul Catcher: streams of circles, leaps across the grid, less time to see
   them coming.
@@ -48,11 +48,15 @@ Skill
 
 - **Hold the Angle**, for players of tactical shooters: somebody leans out of cover, and whoever fires first
   wins the duel.
+- **One Tap**, for the same players: the sights hold a gap at head height and do not move, somebody runs
+  across, and one click at the right moment is a headshot. The gap can be narrow, medium or wide, the
+  runners have four speeds, and every combination keeps a best score of its own.
 - **Last Hit**, for players of MOBAs: strike the blow that finishes a creep, with a sword or with a bow.
 - **Stroop Test**: the word says one colour, the ink is another, and the ink is what counts.
 - **Odd One Out**: one tile of the field is not like the others.
-- **Sens Converter** carries a mouse sensitivity from one shooter to another: Valorant, Counter-Strike 2,
-  Apex Legends, Fortnite, Overwatch 2, Call of Duty, Rainbow Six Siege and Team Fortress 2.
+- **Sens Converter** carries a mouse sensitivity from one shooter to another. It knows 45 games, from
+  Valorant, Counter-Strike 2, Apex Legends and Fortnite to Marvel Rivals, Deadlock and THE FINALS, finds
+  them through a search box, and takes its numbers from sensitivitymatch.com.
 
 Casino
 

@@ -1,10 +1,10 @@
 // What the games played to music share: a tune from Key Mania's composer with its clock and its sound,
 // and the way a run is scored.
 import { drawIcons } from './util.js';
-import { MAX_SCORE, grade, makeSong } from './games/mania.js';
+import { MAX_SCORE, grade, makeSong, semitones } from './games/mania.js';
 import { createSynth } from './synth.js';
 
-export { MAX_SCORE, grade };
+export { MAX_SCORE, grade, semitones };
 const MUTE_KEY = 'arcade:mute'; // one switch for every game with music
 const WEIGHT = { perfect: 1, great: 0.75, good: 0.4, miss: 0 }; // share of the points a hit is worth
 const wall = () => performance.now() / 1000;

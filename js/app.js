@@ -40,6 +40,7 @@ import chess from './games/chess.js';
 import durak from './games/durak.js';
 import lasthit from './games/lasthit.js';
 import peek from './games/peek.js';
+import onetap from './games/onetap.js';
 
 const SITE = 'hellgames by hellkai';
 const VERSION = '1.1.0';
@@ -48,7 +49,7 @@ const VERSION = '1.1.0';
 const games = [
   aim, mania, circles, catcher, helltype, hellword, helltris, hellman, hellybird, run, chess, durak, pong, snake, rain,
   slots, blackjack, dice, soulmines, beats, sand, draw, gems, mahjong, pipes, maze, untangle, lines, sudoku, g2048, mines, memory,
-  peek, lasthit, stroop, odd, reaction, whack, rps, sens, names,
+  peek, onetap, lasthit, stroop, odd, reaction, whack, rps, sens, names,
 ];
 // A game is marked "New" on the home page while its `since` is the current version without the last number.
 const SERIES = VERSION.split('.').slice(0, 2).join('.');

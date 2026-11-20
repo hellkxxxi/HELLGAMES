@@ -480,7 +480,7 @@ a.btn-icon:hover { color: var(--accent2); border-color: color-mix(in srgb, var(-
 .catcher { display:block; width:min(100%, 600px, calc(100vh - 250px)); width:min(100%, 600px, calc(100dvh - 250px)); min-width:min(100%, 260px); aspect-ratio:1; border-radius:16px; box-shadow:0 0 0 1px var(--border); touch-action:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; cursor:none; }
 
 /* Sens Converter */
-.sens { width:min(100%, 520px); }
+.sens { width:min(100%, 760px); }
 .sn-form { display:grid; grid-template-columns:1.6fr 1fr 1fr; gap:10px; }
 .sn-form label { display:flex; flex-direction:column; gap:5px; min-width:0; }
 .sn-form span { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--dim); }
@@ -492,17 +492,27 @@ a.btn-icon:hover { color: var(--accent2); border-color: color-mix(in srgb, var(-
 .sn-facts b { display:block; font-size:17px; font-variant-numeric:tabular-nums; }
 .sn-facts span { font-size:11px; color:var(--dim); }
 .sn-facts .sn-empty { grid-column:1 / -1; font-size:13px; color:var(--muted); }
-.sn-list { margin-top:12px; border-radius:14px; overflow:hidden; border:1px solid var(--border); background:var(--surface); }
-.sn-list li + li { border-top:1px solid var(--border); }
-.sn-list button { width:100%; display:flex; align-items:center; gap:12px; padding:9px 14px; text-align:left; }
+.sn-find { position:relative; display:block; margin-top:12px; }
+.sn-find svg { position:absolute; left:12px; top:50%; width:15px; height:15px; margin-top:-7.5px; color:var(--dim); pointer-events:none; }
+.sn-find input { width:100%; height:40px; padding:0 12px 0 36px; font-size:14px; color:var(--text); background:var(--surface); border:1px solid var(--border); border-radius:11px; outline:none; color-scheme:dark; }
+.sn-find input:focus { border-color:var(--accent); }
+/* one card for every game, two in a row where there is room */
+.sn-list { margin-top:4px; display:grid; grid-template-columns:repeat(auto-fill, minmax(290px, 1fr)); gap:5px; }
+.sn-list li { min-width:0; border-radius:12px; overflow:hidden; border:1px solid var(--border); background:var(--surface); }
+.sn-list .sn-head { grid-column:1 / -1; padding:8px 2px 0; font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--dim); border:0; border-radius:0; background:none; }
+.sn-list button { width:100%; height:100%; min-height:46px; display:flex; align-items:center; gap:12px; padding:7px 14px; text-align:left; }
 .sn-list button:hover { background:var(--surface2); }
 .sn-name { flex:1; min-width:0; font-size:14px; }
-.sn-name small { display:block; font-size:11px; color:var(--dim); }
+.sn-name small { display:block; font-size:11px; line-height:1.3; color:var(--dim); }
+.sn-name abbr { margin-left:5px; color:var(--dim); text-decoration:none; cursor:help; }
 .sn-list b { font-size:17px; font-variant-numeric:tabular-nums; }
 .sn-list svg { flex:none; width:14px; height:14px; color:var(--dim); }
+.sn-list .from { border-color:color-mix(in srgb, var(--accent) 45%, var(--border)); }
 .sn-list .from button { background:color-mix(in srgb, var(--accent) 9%, var(--surface)); }
 .sn-list .from b { color:var(--accent2); }
-.sn-list .sn-empty { padding:16px; text-align:center; font-size:13px; color:var(--muted); }
+.sn-list .sn-empty { grid-column:1 / -1; padding:16px; text-align:center; font-size:13px; color:var(--muted); }
+.sn-source { margin-top:6px; text-align:center; font-size:12px; color:var(--dim); }
+.sn-source a { color:var(--muted); text-decoration:underline; text-underline-offset:3px; }
 @media (max-width:480px) { .sn-form { grid-template-columns:1fr 1fr; } .sn-form label:first-child { grid-column:1 / -1; } .sn-facts { gap:6px; } .sn-facts b { font-size:15px; } }
 
 /* Stroop Test */
@@ -692,3 +702,9 @@ a.btn-icon:hover { color: var(--accent2); border-color: color-mix(in srgb, var(-
 /* Hold the Angle */
 .peek { display:block; width:min(100%, 760px, calc((100vh - 240px) * 1.6)); width:min(100%, 760px, calc((100dvh - 240px) * 1.6)); min-width:min(100%, 280px); aspect-ratio:16 / 10; border-radius:16px; box-shadow:0 0 0 1px var(--border); touch-action:none; cursor:none; user-select:none; -webkit-user-select:none; }
 
+/* One Tap */
+.ot-top { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:8px 18px; margin-bottom:12px; }
+.ot-set { display:flex; align-items:center; gap:8px; }
+.ot-set > span { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--dim); }
+.onetap { display:block; width:min(100%, 820px, calc((100vh - 260px) * 2.2222)); width:min(100%, 820px, calc((100dvh - 260px) * 2.2222)); min-width:min(100%, 280px); aspect-ratio:20 / 9; border-radius:16px; box-shadow:0 0 0 1px var(--border); touch-action:none; cursor:none; user-select:none; -webkit-user-select:none; }
+@media (max-width:560px) { .onetap { aspect-ratio:14 / 9; } .ot-set .seg button { padding:7px 11px; } }
