@@ -316,8 +316,11 @@ function round(d, fire) {
 test('One Tap: the settings', () => {
   const g = onetap.default;
   assert.deepEqual([WIDTHS, SPEEDS], [['narrow', 'medium', 'wide'], ['slow', 'normal', 'fast', 'hell']]);
-  assert.deepEqual(Object.keys(g.variants), WIDTHS.flatMap((w) => SPEEDS.map((s) => `${w}-${s}`)), 'every width with every speed, each with a best score of its own');
-  assert.deepEqual([g.variants['narrow-hell'], g.variants['wide-slow'], g.variants[g.defaultVariant()]], ['Narrow · Hell', 'Wide · Slow', 'Medium · Normal']);
+  // the speed can also be left to chance, which is a fifth setting beside the four speeds
+  assert.deepEqual(Object.keys(g.variants), WIDTHS.flatMap((w) => [...SPEEDS, 'random'].map((s) => `${w}-${s}`)), 'every width with every speed and with a random one, each with a best score of its own');
+  assert.deepEqual([g.variants['narrow-hell'], g.variants['wide-slow'], g.variants['wide-random'], g.variants[g.defaultVariant()]], ['Narrow · Hell', 'Wide · Slow', 'Wide · Random', 'Medium · Normal']);
+  assert.deepEqual(onetap.RANDOM, [onetap.SPEEDS.slow, onetap.SPEEDS.hell], 'a random speed is somewhere from the slowest to the fastest');
+  assert.deepEqual(onetap.timing('medium', onetap.SPEEDS.fast), onetap.timing('medium', 'fast'), 'a speed can be given by its name or as a number');
   // what a combination leaves: less with a narrower gap, less with more speed
   for (const s of SPEEDS) for (let k = 1; k < WIDTHS.length; k++) assert.ok(onetap.timing(WIDTHS[k], s).warning > onetap.timing(WIDTHS[k - 1], s).warning * 1.25, `${s}: a wider gap gives more warning`);
   for (const w of WIDTHS) for (let k = 1; k < SPEEDS.length; k++) {
@@ -458,12 +461,80 @@ test('One Tap: whole rounds', () => {
   assert.equal(human('narrow', 'hell', 0.18), onetap.RUNNERS, 'the narrow gap in hell takes a reflex of less than a fifth of a second');
 });
 
+test('One Tap: a speed of its own for every runner', () => {
+  const [low, high] = onetap.RANDOM, band = (high - low) / onetap.RUNNERS, first = [], orders = new Set();
+  for (const w of WIDTHS) for (const k of [1, 2, 3, 4, 5, 6, 7, 8]) {
+    const seed = WIDTHS.indexOf(w) * 10 + k; // a round of its own for every width
+    const d = onetap.createCrossing(w, 'random', seeded(seed)), gap = onetap.WIDTHS[w], speeds = [...d.speeds];
+    // the mix is the same in every round: one runner out of each twentieth of the way from slow to hell
+    assert.equal(speeds.length, onetap.RUNNERS);
+    [...speeds].sort((a, b) => a - b).forEach((v, k) => assert.ok(v >= low + band * k && v <= low + band * (k + 1), `${w}, ${seed}: the ${k + 1}th slowest does ${v.toFixed(2)} heads a second`));
+    // and the order is not: no two rounds alike, and nothing to be read from the runner before
+    const order = speeds.map((v) => Math.floor((v - low) / band));
+    orders.add(order.join(' ')); first.push(speeds[0]);
+    assert.ok(order.some((b, i) => i && b < order[i - 1]) && order.some((b, i) => i && b > order[i - 1]), `${w}, ${seed}: neither faster and faster nor slower and slower (${order.join(' ')})`);
+    assert.ok(order.filter((b, i) => i && Math.abs(b - order[i - 1]) >= 5).length >= 6, `${w}, ${seed}: the speed often changes a lot from one runner to the next (${order.join(' ')})`);
+    // the round keeps to those speeds, runner by runner
+    const sides = [];
+    while (!d.over) {
+      const n = d.n, v = speeds[n], pause = d.wait, { warning, open } = onetap.timing(w, v);
+      assert.deepEqual([d.v, near(d.perfect * 1000, warning + open / 2, 1e-6)], [v, true], 'the speed and the best moment of the one who comes next are known');
+      assert.ok(pause >= 0.9 && pause <= 2.3, `${w}, ${seed}: a pause of ${pause.toFixed(2)} s`);
+      wait(d, (x) => x.runner);
+      const r = d.runner;
+      sides.push(r.dir);
+      const shown = wait(d, (x) => x.runner !== r || Math.abs(r.s) <= 0.5), on = wait(d, (x) => x.runner !== r || Math.abs(r.s) > 0.5), rest = wait(d, (x) => x.runner !== r);
+      assert.ok(near(shown * 1000, warning, 2) && near(on * 1000, open, 2), `${w}, ${seed}: runner ${n + 1} at ${v.toFixed(1)} heads a second gives ${Math.round(shown * 1000)} ms of warning and ${Math.round(on * 1000)} ms on the sights`);
+      assert.ok(near(shown + on + rest, (gap + onetap.AHEAD + onetap.BEHIND) / v, 0.004), 'and crosses the gap at that speed');
+    }
+    assert.deepEqual([d.n, d.results.length, d.results.every((r) => r.kind === 'none')], [onetap.RUNNERS, onetap.RUNNERS, true], 'twenty runners, as at any speed');
+    assert.ok(sides.every((side, i) => i < 3 || !(side === sides[i - 1] && side === sides[i - 2] && side === sides[i - 3])), 'never four in a row from the same side');
+    assert.deepEqual(speeds, d.speeds, 'the speeds are settled before the round and stay as they are');
+  }
+  assert.equal(orders.size, WIDTHS.length * 8, 'every round has an order of its own');
+  assert.ok(Math.min(...first) < low + band * 5 && Math.max(...first) > high - band * 5, `the first runner can be slow or fast (${first.map((v) => v.toFixed(0)).join(' ')})`);
+  const fixed = onetap.createCrossing('medium', 'fast', seeded(1));
+  assert.deepEqual(fixed.speeds, Array(onetap.RUNNERS).fill(onetap.SPEEDS.fast), 'at a named speed everybody runs alike');
+
+  // shots are judged by the speed of the runner they are fired at
+  const all = (kind) => (d) => d.results.every((r) => r.kind === kind && r.seen);
+  for (const w of WIDTHS) {
+    const d = round(onetap.createCrossing(w, 'random', seeded(31)), (x) => x.loaded && x.runner && Math.abs(x.runner.s) <= 0.02);
+    assert.deepEqual([d.heads, d.shots, all('head')(d)], [onetap.RUNNERS, onetap.RUNNERS, true], `${w}: whoever fires at the right moment gets all twenty, whatever their speeds`);
+    assert.ok(Math.abs(d.offset()) <= 3, `${w}: on average ${d.offset()} ms off`);
+    const jumpy = round(onetap.createCrossing(w, 'random', seeded(31)), (x) => x.loaded && x.runner);
+    const hidden = onetap.WIDTHS[w] / 2 + onetap.AHEAD;
+    assert.ok(jumpy.heads === 0 && all('early')(jumpy) && jumpy.results.every((r, i) => near(r.ms, -hidden / jumpy.speeds[i] * 1000, 2)), `${w}: a shot at the first glimpse is early by the time that runner takes to the sights`);
+    const sleepy = round(onetap.createCrossing(w, 'random', seeded(31)), (x) => x.loaded && x.runner && x.runner.s >= 0.8);
+    assert.ok(sleepy.heads === 0 && all('late')(sleepy) && sleepy.results.every((r, i) => near(r.ms, 0.8 / sleepy.speeds[i] * 1000, 2)), `${w}: and one behind the head is late by the time that runner takes for the way`);
+    // a shot into the empty gap is early by the pause that is left and the time the next runner will take
+    const idle = onetap.createCrossing(w, 'random', seeded(31));
+    wait(idle, (x) => x.n === 3 && x.loaded);
+    const left = idle.wait, next = idle.speeds[3];
+    assert.deepEqual([idle.shoot(), idle.results.at(-1).seen], ['miss', false]);
+    assert.ok(near(idle.results.at(-1).ms, -(left + hidden / next) * 1000, 1), `${w}: ${idle.results.at(-1).ms} ms before the fourth runner's moment`);
+    // Somebody who needs a quarter of a second to see a runner and to click gets those that leave the time for it.
+    // At the narrow gap that is everybody up to a little faster than Fast; at the wider gaps everybody.
+    const human = onetap.createCrossing(w, 'random', seeded(31));
+    let t = 0, since = null;
+    while (!human.over) {
+      human.step(MS); t += MS;
+      if (!human.runner) { since = null; continue; }
+      if (since === null) since = t;
+      if (human.loaded && t - since >= 0.25 && Math.abs(human.runner.s) <= 0.3) human.shoot();
+    }
+    const time = (v) => (hidden - 0.5 + 0.8) / v, sure = human.speeds.filter((v) => time(v) > 0.253).length, maybe = human.speeds.filter((v) => time(v) > 0.247).length;
+    assert.ok(human.heads >= sure && human.heads <= maybe, `${w}: ${human.heads} heads with a quarter of a second to react (between ${sure} and ${maybe})`);
+    assert.deepEqual([sure, maybe].map((n) => (w === 'narrow' ? n >= 13 && n <= 15 : n === onetap.RUNNERS)), [true, true], `${w}: ${sure} of twenty leave that much time`);
+  }
+});
+
 test('One Tap: the same on any screen', () => {
   // The moments of the shots are taken from a round played a millisecond at a time: some too early, some in
   // time, some too late. Played again in steps as long as the pictures of a screen (and stepped up to the very
   // moment of each shot, as the page does it), every shot does the same.
   const aims = [-0.7, -0.3, 0.3, 0.45, 0.7];
-  for (const [w, s] of [['narrow', 'hell'], ['medium', 'normal'], ['wide', 'fast']]) {
+  for (const [w, s] of [['narrow', 'hell'], ['medium', 'normal'], ['wide', 'fast'], ['narrow', 'random'], ['wide', 'random']]) {
     const model = onetap.createCrossing(w, s, seeded(8)), shots = [];
     let t = 0;
     while (!model.over) { model.step(MS); t += MS; if (model.loaded && model.runner && model.runner.s >= aims[model.n % aims.length]) { shots.push(t); model.shoot(); } }

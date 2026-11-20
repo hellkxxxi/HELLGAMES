@@ -9,21 +9,38 @@ import { fitCanvas, loop, noScroll } from '../util.js';
 export const RUNNERS = 20;
 export const WIDTHS = { narrow: 6, medium: 9, wide: 12 };            // how wide the gap is
 export const SPEEDS = { slow: 7, normal: 11, fast: 16, hell: 21 };   // heads a second; somebody who runs in a shooter does a little over twenty
-const PAUSE = { slow: [1.1, 2.6], normal: [1, 2.3], fast: [0.9, 2], hell: [0.8, 1.8] }; // seconds of nothing before the next one
+export const RANDOM = [SPEEDS.slow, SPEEDS.hell];                    // with the speed set to 'random', every runner has one of its own between these two
+const PAUSE = { slow: [1.1, 2.6], normal: [1, 2.3], fast: [0.9, 2], hell: [0.8, 1.8], random: [0.9, 2.3] }; // seconds of nothing before the next one
 export const RELOAD = 0.45;   // seconds until the next bullet is in: a second click right after a shot does not waste it
 export const AHEAD = 0.9;     // how far a figure reaches in front of the middle of its head (the shoulder, a hand)
 export const BEHIND = 1.25;   // and how far behind it (the foot it pushes off with)
 
-// How much time a combination leaves, in milliseconds: `warning` from the first glimpse of a runner to the
-// moment a shot begins to kill, and `open` for how long the head then stays on the sights.
-export const timing = (width, speed) => ({ warning: (WIDTHS[width] / 2 + AHEAD - 0.5) / SPEEDS[speed] * 1000, open: 1000 / SPEEDS[speed] });
+// How much time a runner leaves, in milliseconds: `warning` from the first glimpse of it to the moment a shot
+// begins to kill, and `open` for how long the head then stays on the sights. `speed` is the name of a speed,
+// or a number of heads a second.
+export function timing(width, speed) {
+  const v = SPEEDS[speed] || speed;
+  return { warning: (WIDTHS[width] / 2 + AHEAD - 0.5) / v * 1000, open: 1000 / v };
+}
+
+// The speeds of a round in which every runner has one of its own: one out of each twentieth of the way from
+// the slowest to the fastest, in an order nobody can know. So one such round is as hard as another, and no
+// round is all slow runners by luck.
+function mixed(rnd) {
+  const [low, high] = RANDOM, speeds = Array.from({ length: RUNNERS }, (_, k) => low + (high - low) * (k + rnd()) / RUNNERS);
+  for (let k = RUNNERS - 1; k > 0; k--) { const j = Math.floor(rnd() * (k + 1)); [speeds[k], speeds[j]] = [speeds[j], speeds[k]]; }
+  return speeds;
+}
 
 export function createCrossing(width = 'medium', speed = 'normal', rnd = Math.random) {
-  const gap = WIDTHS[width], v = SPEEDS[speed];
+  const gap = WIDTHS[width];
   const from = -(gap / 2 + AHEAD), to = gap / 2 + BEHIND; // out of sight behind the one wall, and behind the other
-  const span = (to - from) / v;                           // seconds a runner takes from the one to the other
-  // `perfect`: so many seconds after a runner shows, the middle of its head is on the sights
-  const d = { gap, v, perfect: -from / v, n: 0, wait: 0, runner: null, loaded: true, heads: 0, shots: 0, results: [], events: [], over: false };
+  const speeds = speed === 'random' ? mixed(rnd) : Array(RUNNERS).fill(SPEEDS[speed]); // heads a second, runner by runner
+  // `v` and `perfect` are those of the runner in sight, or of the one who comes next. `perfect`: so many
+  // seconds after the runner shows, the middle of its head is on the sights.
+  const d = { gap, speeds, v: 0, perfect: 0, n: 0, wait: 0, runner: null, loaded: true, heads: 0, shots: 0, results: [], events: [], over: false };
+  let span = 0;                                           // seconds this runner takes from the one wall to the other
+  const pace = () => { d.v = speeds[d.n]; d.perfect = -from / d.v; span = (to - from) / d.v; };
   const pause = () => PAUSE[speed][0] + rnd() * (PAUSE[speed][1] - PAUSE[speed][0]);
   let fired = false, reload = 0; // the bullet for this runner has been fired; seconds until the next one is in
   let lastDir = 0, streak = 0;
@@ -37,7 +54,7 @@ export function createCrossing(width = 'medium', speed = 'normal', rnd = Math.ra
   function nextRunner() {
     d.runner = null; d.n++;
     if (d.n >= RUNNERS) { d.over = true; return; }
-    d.wait = pause(); fired = false; reload = RELOAD; d.loaded = false;
+    pace(); d.wait = pause(); fired = false; reload = RELOAD; d.loaded = false;
   }
   // How it went with a runner: 'head', 'early', 'late', or 'none' when nobody fired. `seen` says whether the
   // runner was in sight when the shot was fired; for the picture, `s` is where its head was.
@@ -53,7 +70,7 @@ export function createCrossing(width = 'medium', speed = 'normal', rnd = Math.ra
     while (!d.over && dt > 0) {
       const r = d.runner, left = r ? span - r.t : d.wait; // seconds until the next thing happens
       if (dt < left) {
-        if (r) { r.t += dt; r.s = from + v * r.t; } else d.wait -= dt;
+        if (r) { r.t += dt; r.s = from + d.v * r.t; } else d.wait -= dt;
         pass(dt); return;
       }
       pass(left); dt -= left;
@@ -77,22 +94,22 @@ export function createCrossing(width = 'medium', speed = 'normal', rnd = Math.ra
     const shots = d.results.filter((r) => r.seen && r.kind !== 'none');
     return shots.length ? Math.round(shots.reduce((sum, r) => sum + r.ms, 0) / shots.length) : null;
   };
-  d.wait = pause();
+  pace(); d.wait = pause();
   return d;
 }
 
 // ---------------------------------------------------------------- the game on screen
 const wall = () => performance.now() / 1000;
-const WIDTH_NAMES = { narrow: 'Narrow', medium: 'Medium', wide: 'Wide' }, SPEED_NAMES = { slow: 'Slow', normal: 'Normal', fast: 'Fast', hell: 'Hell' };
+const WIDTH_NAMES = { narrow: 'Narrow', medium: 'Medium', wide: 'Wide' }, SPEED_NAMES = { slow: 'Slow', normal: 'Normal', fast: 'Fast', hell: 'Hell', random: 'Random' };
 // The picture is nine heads high; how many heads wide it is follows from its shape (twenty on a desktop, fourteen on a phone).
 const TALL = 9, LINTEL = 0.9, EYES = 3.1, FEET = 7.4, SILL = 7.75; // from the top: under the lintel, the middle of a head, the feet, where the walls stand
 
 export default {
   id: 'onetap', name: 'One Tap', icon: 'door-open', color: '#a3e635', tag: 'Skill', since: '1.1',
   desc: 'For shooter players: your sights hold a gap at head height, and somebody runs across. One bullet for each.',
-  help: 'Click, tap or press Space to fire · the sights stay where they are, only the moment counts · one bullet for each runner · the width of the gap and the speed are up to you',
+  help: 'Click, tap or press Space to fire · the sights stay where they are, only the moment counts · one bullet for each runner · Random gives every runner a speed of its own',
   scoreLabel: 'Heads',
-  // every width with every speed, each with a best score of its own
+  // every width with every speed (and with Random, a speed for every runner), each with a best score of its own
   variants: Object.fromEntries(Object.entries(WIDTH_NAMES).flatMap(([w, wide]) => Object.entries(SPEED_NAMES).map(([s, fast]) => [`${w}-${s}`, `${wide} · ${fast}`]))),
   defaultVariant: () => 'medium-normal',
   create(stage, api) {
@@ -107,7 +124,7 @@ export default {
     function reset() {
       clearTimeout(endTimer); api.hideOverlay();
       [width, speed] = String(api.variant()).split('-');
-      if (!WIDTHS[width] || !SPEEDS[speed]) [width, speed] = ['medium', 'normal'];
+      if (!WIDTH_NAMES[width] || !SPEED_NAMES[speed]) [width, speed] = ['medium', 'normal'];
       for (const b of stage.querySelectorAll('#ot-width button')) b.classList.toggle('on', b.dataset.v === width);
       for (const b of stage.querySelectorAll('#ot-speed button')) b.classList.toggle('on', b.dataset.v === speed);
       game = createCrossing(width, speed); state = 'ready'; pops = []; ghosts = []; fallen = [];

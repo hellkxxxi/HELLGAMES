@@ -35,7 +35,7 @@ Each of the three plays a tune that is composed anew for every round, on four le
 | **Reaction Test** | Click the moment the screen turns green. The score is the average of five tries. | Click, tap or `Space` |
 | **Whack-a-Mole** | Little devils pop out of lava pits. Bop as many as you can in 30 seconds. | Click, tap or the number keys |
 | **Hold the Angle** | For players of tactical shooters: somebody leans out of cover, and whoever fires first wins. A shot in the head ends it at once. The score is the average time of twelve duels. | Mouse and click, or tap |
-| **One Tap** | Also for shooter players: the sights hold a gap at head height and do not move. Somebody runs across, and one click at the right moment is a headshot. One bullet for each runner; the gap can be narrow, medium or wide, and there are four speeds. | Click, tap or `Space` |
+| **One Tap** | Also for shooter players: the sights hold a gap at head height and do not move. Somebody runs across, and one click at the right moment is a headshot. One bullet for each runner; the gap can be narrow, medium or wide, and there are four speeds, or Random, which gives every runner a speed of its own. | Click, tap or `Space` |
 | **Last Hit** | For players of MOBAs: strike the blow that finishes a creep, with a sword or with a bow. Too early is wasted, too late and the creep is lost. | Click or tap a creep |
 | **Stroop Test** | The word says GREEN, the ink is red. Pick the colour of the ink, not the one the word names. 30 seconds, in English or Russian. | Click, tap or `1` to `4` |
 | **Odd One Out** | One tile is not like the others: a shade off, or another letter. Every find makes the field bigger and the difference smaller. | Mouse or finger |
