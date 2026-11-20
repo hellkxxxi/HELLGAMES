@@ -5,6 +5,8 @@ import { GRANT, MIN_BET, souls, wallet } from '../../js/casino.js';
 import { PAIR, PAYS, REELS, payout as slotPays, returnToPlayer } from '../../js/games/slots.js';
 import * as dice from '../../js/games/dice.js';
 import * as mines from '../../js/games/soulmines.js';
+import * as blackjack from '../../js/games/blackjack.js';
+import { seeded } from './seeded.mjs';
 
 const BETS = [10, 20, 50, 100, 500, 1000, 12345, 1000000];
 
@@ -71,4 +73,75 @@ test('Soul Mines: the prize grows by exactly the risk taken', () => {
     }
   }
   assert.deepEqual([mines.prize(100, 1, 24), mines.prize(20, 10, 1), mines.prize(100, 1, 1)], [2475, 33, 103]);
+});
+
+// ---------------------------------------------------------------- Blackjack
+const hand = (...ranks) => ranks.map((rank) => ({ rank: String(rank), suit: 'spades' }));
+
+test('Blackjack: what a hand counts', () => {
+  const { total, isBlackjack } = blackjack;
+  assert.deepEqual(total(hand('K', 9)), { sum: 19, soft: false });
+  assert.deepEqual(total(hand('J', 'Q', 'K')), { sum: 30, soft: false }, 'pictures count ten');
+  assert.deepEqual(total(hand('A', 6)), { sum: 17, soft: true }, 'an ace counts eleven while that fits');
+  assert.deepEqual(total(hand('A', 6, 9)), { sum: 16, soft: false }, 'and one when it does not');
+  assert.deepEqual(total(hand('A', 'A')), { sum: 12, soft: true }, 'only one of two aces can count eleven');
+  assert.deepEqual(total(hand('A', 'A', 9)), { sum: 21, soft: true });
+  assert.deepEqual(total(hand('A', 'A', 'A', 'K', 8)), { sum: 21, soft: false });
+  assert.deepEqual(total([]), { sum: 0, soft: false });
+  assert.equal(isBlackjack(hand('A', 'K')) && isBlackjack(hand(10, 'A')), true, 'an ace and a ten or a picture');
+  assert.equal(isBlackjack(hand(7, 7, 7)) || isBlackjack(hand('A', 5, 5)) || isBlackjack(hand('K', 'Q')), false, 'twenty-one with three cards is no blackjack');
+});
+
+test('Blackjack: who wins, and what it pays', () => {
+  const { outcome, payout } = blackjack;
+  assert.equal(outcome(hand('K', 9), hand(10, 8)), 'win');
+  assert.equal(outcome(hand('K', 7), hand(10, 8)), 'lose');
+  assert.equal(outcome(hand('K', 8), hand(9, 9)), 'push', 'the same count is a draw');
+  assert.equal(outcome(hand('K', 6), hand(10, 6, 9)), 'win', 'the dealer went over 21');
+  assert.equal(outcome(hand('K', 6, 9), hand(10, 6, 9)), 'bust', 'the player went over first: lost, whatever the dealer has');
+  assert.equal(outcome(hand('A', 'K'), hand(7, 7, 7)), 'blackjack', 'a blackjack beats a twenty-one of three cards');
+  assert.equal(outcome(hand(7, 7, 7), hand('A', 'K')), 'lose', 'on either side of the table');
+  assert.equal(outcome(hand('A', 'K'), hand('Q', 'A')), 'push', 'two blackjacks are a draw');
+  assert.deepEqual(['blackjack', 'win', 'push', 'lose', 'bust'].map((r) => payout(r, 100)), [250, 200, 100, 0, 0], 'three to two for a blackjack, even money for a win, the bet back for a draw');
+  for (const bet of BETS) for (const r of ['blackjack', 'win', 'push', 'lose', 'bust']) assert.ok(Number.isInteger(payout(r, bet)) && payout(r, bet) >= 0, 'whole souls only');
+  assert.equal(payout('blackjack', 30), 75);
+});
+
+test('Blackjack: the dealer draws to seventeen and the shoe is fair', () => {
+  const rnd = seeded(1), ranks = {}, suits = {};
+  for (let i = 0; i < 52000; i++) { const card = blackjack.draw(rnd); ranks[card.rank] = (ranks[card.rank] || 0) + 1; suits[card.suit] = (suits[card.suit] || 0) + 1; }
+  assert.deepEqual(Object.keys(ranks).sort(), [...blackjack.RANKS].sort(), 'every rank is dealt');
+  for (const n of Object.values(ranks)) assert.ok(n > 3700 && n < 4300, `every rank about as often as any other (${n} of 52,000)`);
+  for (const n of Object.values(suits)) assert.ok(n > 12500 && n < 13500, 'and every suit');
+  for (let i = 0; i < 3000; i++) {
+    const cards = blackjack.dealerPlays([blackjack.draw(rnd), blackjack.draw(rnd)], rnd), { sum } = blackjack.total(cards);
+    assert.ok(sum >= 17 && sum <= 26, `the dealer ends between 17 and 26 (${sum})`);
+    assert.ok(blackjack.total(cards.slice(0, -1)).sum < 17 || cards.length === 2, 'and takes no card once at 17');
+  }
+  assert.equal(blackjack.dealerPlays(hand('A', 6), rnd).length, 2, 'the dealer stands on a soft 17 too');
+});
+
+test('Blackjack: played sensibly, nearly everything comes back in the long run', () => {
+  // A player who follows the textbook for the count of the hand and the dealer's open card.
+  const { draw, total, isBlackjack, dealerPlays, outcome, payout } = blackjack, rnd = seeded(2);
+  const ten = (c) => (c.rank === 'A' ? 11 : 'JQK'.includes(c.rank) ? 10 : Number(c.rank));
+  let staked = 0, back = 0;
+  for (let round = 0; round < 300000; round++) {
+    const player = [draw(rnd), draw(rnd)], dealer = [draw(rnd), draw(rnd)], up = ten(dealer[0]);
+    let stake = 10;
+    if (!isBlackjack(player) && !isBlackjack(dealer)) {
+      const first = total(player);
+      if (!first.soft && (first.sum === 11 || (first.sum === 10 && up < 10) || (first.sum === 9 && up >= 3 && up <= 6))) { stake = 20; player.push(draw(rnd)); }
+      else for (;;) {
+        const { sum, soft } = total(player);
+        const hit = soft ? sum <= 17 || (sum === 18 && up >= 9) : sum <= 11 || (sum === 12 && (up < 4 || up > 6)) || (sum >= 13 && sum <= 16 && up >= 7);
+        if (!hit) break;
+        player.push(draw(rnd));
+      }
+      if (total(player).sum <= 21) dealerPlays(dealer, rnd);
+    }
+    staked += stake; back += payout(outcome(player, dealer), stake);
+  }
+  const share = back / staked;
+  assert.ok(share > 0.98 && share < 1.002, `${(share * 100).toFixed(2)}% of the bets come back: the house keeps about one per cent, as in a real casino`);
 });

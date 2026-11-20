@@ -554,3 +554,59 @@ a.btn-icon:hover { color: var(--accent2); border-color: color-mix(in srgb, var(-
 /* Labyrinth */
 .maze { display:block; width:min(100%, 520px, calc(100vh - 250px)); width:min(100%, 520px, calc(100dvh - 250px)); min-width:min(100%, 260px); aspect-ratio:1; border-radius:14px; box-shadow:0 0 0 1px var(--border); touch-action:none; }
 
+/* Lava Pipes */
+.pipes { width:min(100%, 460px, calc(100vh - 250px)); width:min(100%, 460px, calc(100dvh - 250px)); min-width:min(100%, 260px); display:flex; flex-direction:column; align-items:center; }
+.pp-grid { width:100%; aspect-ratio:1; display:grid; grid-template-columns:repeat(var(--n), 1fr); gap:2px; padding:8px; border-radius:16px; background:var(--surface); border:1px solid var(--border); touch-action:manipulation; user-select:none; -webkit-user-select:none; }
+.pp-tile { min-width:0; min-height:0; padding:0; border-radius:6px; background:#1f1312; overflow:hidden; }
+.pp-tile:hover { background:#2a1a18; }
+.pp-tile svg { display:block; width:100%; height:100%; transition:transform .14s ease-out; }
+.pp-case, .pp-lava { fill:none; stroke-linecap:round; }
+.pp-case { stroke:#0b0606; stroke-width:36; }
+.pp-case-knob { fill:#0b0606; }
+.pp-lava { stroke:#5b4743; stroke-width:21; transition:stroke .15s; }
+.pp-knob { fill:#5b4743; transition:fill .15s; }
+.pp-tile.lit .pp-lava { stroke:#ff7a3d; }
+.pp-tile.lit .pp-knob { fill:#ff9a4d; }
+.pp-tile.well .pp-knob { fill:#fde047; }
+
+/* Untangle */
+.untangle { display:block; width:min(100%, 560px, calc(100vh - 250px)); width:min(100%, 560px, calc(100dvh - 250px)); min-width:min(100%, 260px); aspect-ratio:1; border-radius:16px; box-shadow:0 0 0 1px var(--border); touch-action:none; cursor:grab; }
+.untangle:active { cursor:grabbing; }
+
+/* Hellgems */
+.gems { width:min(100%, 480px, calc(100vh - 270px)); width:min(100%, 480px, calc(100dvh - 270px)); min-width:min(100%, 260px); display:flex; flex-direction:column; align-items:center; }
+.gm-board { position:relative; width:100%; aspect-ratio:1; overflow:hidden; border-radius:14px; border:1px solid var(--border); background:repeating-conic-gradient(#1c1211 0 25%, #150d0c 0 50%) 0 0 / 25% 25%; touch-action:none; cursor:pointer; user-select:none; -webkit-user-select:none; }
+.gm-gem { position:absolute; left:0; top:0; width:12.5%; height:12.5%; transform:translate(calc(var(--x) * 100%), calc(var(--y) * 100%)); transition:transform .2s ease-in-out; will-change:transform; }
+.gm-gem svg { display:block; width:84%; height:84%; margin:8%; transition:transform .12s; pointer-events:none; }
+.gm-body { stroke-width:8; stroke-linejoin:round; }
+.gm-shine { fill:#fff; opacity:.24; }
+.gm-gem.picked svg { transform:scale(1.15); filter:drop-shadow(0 0 6px rgba(255,255,255,.95)); }
+.gm-gem.pop { animation:gm-pop .19s ease-in forwards; }
+@keyframes gm-pop { to { transform:translate(calc(var(--x) * 100%), calc(var(--y) * 100%)) scale(.15); opacity:0; } }
+.gm-note { position:absolute; z-index:2; top:10px; left:50%; transform:translateX(-50%); width:max-content; max-width:90%; padding:5px 13px; border-radius:99px; font-size:13px; font-weight:700; color:#1b0d0a; background:#f6f1ef; box-shadow:0 8px 24px rgba(0,0,0,.55); pointer-events:none; }
+.gm-note:empty { display:none; }
+
+/* Playing cards, as Blackjack and Durak share them. --cw is the width of a card. */
+.pc { position:relative; flex:none; display:block; width:var(--cw, 64px); aspect-ratio:5 / 7; padding:0; border-radius:calc(var(--cw, 64px) * .11); color:#1c1212; background:linear-gradient(180deg, #fffaf2, #ece2d4); box-shadow:0 2px 6px rgba(0,0,0,.5), inset 0 0 0 1px rgba(0,0,0,.22); user-select:none; -webkit-user-select:none; }
+.pc.red { color:#c41e1e; }
+.pc b { position:absolute; top:5%; left:9%; font-size:calc(var(--cw, 64px) * .36); font-weight:800; line-height:1; letter-spacing:-.05em; }
+.pc svg { position:absolute; right:9%; bottom:8%; width:46%; height:auto; aspect-ratio:1; fill:currentColor; stroke-width:1.5; }
+.pc.back { background:repeating-linear-gradient(45deg, #7f1d1d 0 5px, #641414 5px 10px); box-shadow:0 2px 6px rgba(0,0,0,.5), inset 0 0 0 2px #2a0b09, inset 0 0 0 3.5px rgba(253,230,138,.5); }
+
+/* Blackjack */
+.bj { width:min(100%, 480px); display:flex; flex-direction:column; align-items:center; }
+.bj-table { --cw:clamp(50px, 15vw, 74px); width:100%; display:flex; flex-direction:column; gap:10px; padding:14px; border-radius:18px; background:radial-gradient(ellipse at 50% 0%, #3d1713, #1a0b0a 78%); border:1px solid #4a2a22; }
+.bj-side { display:flex; align-items:center; justify-content:space-between; min-height:24px; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:#b39a96; }
+.bj-side output { min-width:34px; padding:2px 9px; border-radius:99px; text-align:center; font-size:13px; font-weight:700; letter-spacing:0; text-transform:none; color:var(--text); background:rgba(0,0,0,.4); }
+.bj-side output:empty { visibility:hidden; }
+.bj-hand { display:flex; justify-content:center; min-height:calc(var(--cw) * 1.4); }
+.bj-hand .pc + .pc { margin-left:calc(var(--cw) * -.3); }
+.bj-hand .pc.new { animation:bj-in .22s ease-out; }
+@keyframes bj-in { from { transform:translateY(-16px); opacity:0; } }
+.bj .cz-bar[hidden] { display:none; }
+.bj .cz-bar { min-height:44px; }
+.bj-btn { min-width:104px; padding:10px 18px; border-radius:12px; font-weight:600; color:#e8e0df; background:var(--surface); border:1px solid var(--border); touch-action:manipulation; }
+.bj-btn:hover { background:var(--surface2); }
+.bj-btn:disabled { opacity:.4; }
+.bj-acts .btn-primary { min-width:104px; }
+

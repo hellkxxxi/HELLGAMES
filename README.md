@@ -3,7 +3,7 @@
 <h1 align="center">hellgames</h1>
 
 <p align="center">
-  Thirty-three free mini-games that open straight in the browser, on a computer or a phone.<br>
+  Thirty-seven free mini-games that open straight in the browser, on a computer or a phone.<br>
   No installs, no ads, no sign-up.
 </p>
 
@@ -52,6 +52,9 @@ Each of the three plays a tune that is composed anew for every round, on four le
 | --- | --- | --- |
 | **Helltris** | Falling blocks with a ghost piece, a hold slot and a preview of the next three pieces. | Arrow keys, `Space` to drop, `C` to hold; buttons on a phone |
 | **Mahjong** | Mahjong solitaire: clear the table by taking free tiles in matching pairs. Two layouts, hints, shuffle and undo. Every deal can be won. | Mouse or finger |
+| **Hellgems** | Match three: swap two gems to line up three of a kind. What falls into place afterwards counts double, then treble. Thirty moves, or sixty seconds. | Drag a gem onto its neighbour, or click one and then the other |
+| **Lava Pipes** | Turn the pieces of pipe until the lava from the well in the middle reaches every one of them. Three sizes. | Click or tap to turn a piece; right-click turns it the other way |
+| **Untangle** | A web of lines in a tangle. Drag the knots about until no line crosses another. | Mouse or finger |
 | **Labyrinth** | A new maze every time, in three sizes. One push and the devil runs on to the next fork; the clock runs too. | Arrow keys, `W` `A` `S` `D` or swipes |
 | **Lines 98** | Move balls to line up five of one colour. Three more drop in after every move. | Mouse or finger |
 | **Sudoku** | Three levels with pencil notes, hints and undo. Every puzzle has exactly one solution. | Mouse or finger, number keys |
@@ -75,11 +78,12 @@ Each of the three plays a tune that is composed anew for every round, on four le
 The casino plays for souls, and souls are play money: they cannot be bought, sold or cashed out, and there is
 no real money anywhere on the site. Everybody starts with 1,000, and whoever runs out is handed 1,000 more.
 The odds are written down in the code and checked by the tests: in the long run the slot machine gives back
-96.3% of what is bet, the other two games 99%.
+96.3% of what is bet, the dice and the mines 99%, and blackjack about 99% to a player who follows the textbook.
 
 | Game | What you do | Controls |
 | --- | --- | --- |
 | **Soul Slots** | Three reels. Three of a kind pay up to 200 times the bet, and any pair gives the bet back. | `Space` to spin, arrow keys for the bet |
+| **Blackjack** | Closer to 21 than the dealer, but not over it. Hit, stand or double; a blackjack pays three to two; the dealer stands on 17. | `Space` to deal, `H` to hit, `S` to stand, `D` to double |
 | **Soul Dice** | Choose your own odds, from a safe 98% to a 2% long shot that pays almost fifty times the bet, and roll. | `Space` to roll, arrow keys for the odds and the bet |
 | **Soul Mines** | Open tiles on a field that hides skulls. Every safe tile raises the prize; take it before a skull takes the bet. | Mouse or finger; `C` takes the prize |
 

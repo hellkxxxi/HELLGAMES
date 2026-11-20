@@ -32,14 +32,18 @@ import rps from './games/rps.js';
 import run from './games/run.js';
 import rain from './games/rain.js';
 import maze from './games/maze.js';
+import pipes from './games/pipes.js';
+import untangle from './games/untangle.js';
+import gems from './games/gems.js';
+import blackjack from './games/blackjack.js';
 
 const SITE = 'hellgames by hellkai';
 const VERSION = '1.1.0';
 // The games appear on the home page in this order. The filter buttons above them are the tags of the
 // games, in the order in which the tags first turn up in this list.
 const games = [
-  aim, mania, circles, catcher, helltype, hellword, helltris, hellman, hellybird, run, pong, snake, rain, slots, dice, soulmines,
-  beats, sand, draw, mahjong, maze, lines, sudoku, g2048, mines, memory, stroop, odd, reaction, whack, rps, sens, names,
+  aim, mania, circles, catcher, helltype, hellword, helltris, hellman, hellybird, run, pong, snake, rain, slots, blackjack, dice, soulmines,
+  beats, sand, draw, gems, mahjong, pipes, maze, untangle, lines, sudoku, g2048, mines, memory, stroop, odd, reaction, whack, rps, sens, names,
 ];
 // A game is marked "New" on the home page while its `since` is the current version without the last number.
 const SERIES = VERSION.split('.').slice(0, 2).join('.');
