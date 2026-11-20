@@ -12,7 +12,7 @@ const MODES = {
 const TAU = Math.PI * 2;
 
 export default {
-  id: 'aim', name: 'Aim Trainer', icon: 'crosshair', color: '#34d399', tag: 'Aim',
+  id: 'aim', name: 'Aim Trainer', icon: 'crosshair', color: '#34d399', tag: 'Skill',
   desc: 'Flick to the targets and click them as fast as you can. 30 seconds on the clock.',
   help: 'Click or tap the targets · a miss costs points · the clock starts with your first hit',
   variants: { grid: 'Gridshot', flick: 'Flick', tiny: 'Precision' },

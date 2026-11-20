@@ -1,4 +1,5 @@
-// The rules of the games, tested without a browser:  node --test tools/unit
+// The rules of the games, tested without a browser:  npm test -- unit
+// This file: the games of version 1.0 and the files of the site. The newer games have files of their own.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { WORDS } from '../../js/data/words.js';
@@ -9,9 +10,8 @@ import { findLines, findPath } from '../../js/games/lines.js';
 import { countSolutions, makePuzzle, needsOnlyBasics } from '../../js/games/sudoku.js';
 import { MAX_SCORE, createRun, grade, makeSong } from '../../js/games/mania.js';
 import { floodFill } from '../../js/games/draw.js';
+import { seeded } from './seeded.mjs';
 
-// The same "random" numbers on every run, so a failure can be repeated.
-const seeded = (seed) => () => { seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 
 // ---------------------------------------------------------------- Helltype
 test('word lists are clean', () => {
@@ -160,7 +160,7 @@ test('Sudoku: every puzzle has exactly one solution and the promised difficulty'
 
 // ---------------------------------------------------------------- Key Mania
 test('Key Mania: a perfect run scores the maximum, an idle one scores nothing', () => {
-  for (const mode of ['easy', 'normal', 'hard']) {
+  for (const mode of ['easy', 'normal', 'hard', 'hell']) {
     const song = makeSong(mode, seeded(5));
     assert.ok(song.notes.length > 40, `${mode}: enough notes`);
     assert.ok(song.notes.every((n, i) => n.lane >= 0 && n.lane < 4 && (!i || n.t >= song.notes[i - 1].t)), `${mode}: notes are in order`);
@@ -196,7 +196,7 @@ test('every icon the pages ask for is in the bundled icon set', async () => {
   const { readFileSync, readdirSync } = await import('node:fs');
   const { icons } = await import('../../js/vendor/lucide.js');
   const root = new URL('../../', import.meta.url);
-  const files = ['index.html', 'js/app.js', ...readdirSync(new URL('js/games/', root)).map((f) => 'js/games/' + f)];
+  const files = ['index.html', ...readdirSync(new URL('js/', root)).filter((f) => f.endsWith('.js')).map((f) => 'js/' + f), ...readdirSync(new URL('js/games/', root)).map((f) => 'js/games/' + f)];
   const asked = new Set(['trophy', 'flag', 'play']); // the icons of the start and result screens
   for (const file of files) {
     const text = readFileSync(new URL(file, root), 'utf8');
@@ -213,4 +213,71 @@ test('the version is the same everywhere', async () => {
   const version = read('js/app.js').match(/const VERSION = '(\d+\.\d+\.\d+)'/)?.[1];
   assert.ok(version, 'js/app.js has a VERSION');
   assert.ok(read('CHANGELOG.md').includes(`## ${version}`), 'CHANGELOG.md has an entry for this version');
+});
+
+// The games as js/app.js lists them: [{ file, module }], in the order of the home page.
+async function listedGames() {
+  const { readFileSync } = await import('node:fs');
+  const app = readFileSync(new URL('../../js/app.js', import.meta.url), 'utf8');
+  const fileOf = Object.fromEntries([...app.matchAll(/^import (\w+) from '\.\/games\/([\w-]+\.js)';$/gm)].map((m) => [m[1], m[2]]));
+  const names = app.match(/const games = \[([^\]]+)\]/)[1].split(',').map((n) => n.trim()).filter(Boolean);
+  return Promise.all(names.map(async (name) => ({ name, file: fileOf[name], module: fileOf[name] ? (await import('../../js/games/' + fileOf[name])).default : null })));
+}
+
+test('every game file is on the home page, once', async () => {
+  const { readdirSync } = await import('node:fs');
+  const games = await listedGames();
+  assert.deepEqual(games.filter((g) => !g.file).map((g) => g.name), [], 'every name in the list is imported');
+  assert.deepEqual(games.map((g) => g.file).sort(), readdirSync(new URL('../../js/games/', import.meta.url)).sort(), 'the list and the folder js/games hold the same games');
+});
+
+test('every game has what its card and its page need', async () => {
+  const { readFileSync } = await import('node:fs');
+  const games = (await listedGames()).map((g) => ({ ...g.module, file: g.file }));
+  const series = readFileSync(new URL('../../js/app.js', import.meta.url), 'utf8').match(/const VERSION = '(\d+\.\d+)\.\d+'/)[1];
+  assert.equal(new Set(games.map((g) => g.id)).size, games.length, 'no id twice');
+  assert.equal(new Set(games.map((g) => g.name)).size, games.length, 'no name twice');
+  const perTag = {};
+  for (const g of games) {
+    assert.equal(g.file, g.id + '.js', `${g.id}: the file is named after the id`);
+    assert.ok(/^[a-z0-9]+$/.test(g.id), `${g.id}: the id works as an address`);
+    assert.ok(/^#[0-9a-f]{6}$/.test(g.color), `${g.id}: a colour`);
+    assert.ok(g.icon && typeof g.create === 'function', `${g.id}: an icon and a create function`);
+    assert.ok(g.desc.length >= 40 && g.desc.length <= 110, `${g.id}: the card text fits in two or three lines (${g.desc.length} characters)`);
+    assert.ok(g.help.length > 10 && g.help.length <= 175, `${g.id}: the help line fits under the game on a phone (${g.help.length} characters)`);
+    assert.ok(g.since === undefined || /^\d+\.\d+$/.test(g.since), `${g.id}: "since" is a version like 1.1`);
+    if (g.variants) assert.ok(Object.keys(g.variants).length >= 2, `${g.id}: more than one mode, or none`);
+    perTag[g.tag] = (perTag[g.tag] || 0) + 1;
+  }
+  assert.ok(Object.keys(perTag).length <= 8, 'the filter buttons fit in one or two rows');
+  assert.deepEqual(Object.entries(perTag).filter(([, n]) => n < 2), [], 'no filter button for a single game');
+  assert.ok(games.some((g) => g.since === series) || !games.some((g) => g.since), 'a "New" badge is on the games of this version');
+});
+
+test('the texts state the right number of games and name them', async () => {
+  const { readFileSync } = await import('node:fs');
+  const read = (file) => readFileSync(new URL('../../' + file, import.meta.url), 'utf8');
+  const games = (await listedGames()).map((g) => g.module.name), n = games.length;
+  const small = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+  const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+  const words = n < 20 ? small[n] : tens[Math.floor(n / 10)] + (n % 10 ? '-' + small[n % 10] : '');
+  const Words = words[0].toUpperCase() + words.slice(1);
+
+  const page = read('index.html');
+  assert.ok(page.includes(`property="og:description" content="${Words} free mini-games`), `index.html: the text for shared links says "${Words}"`);
+  assert.ok(page.includes(`${words} free browser mini-games`), 'index.html: so does the description of the sharing picture');
+  assert.equal(JSON.parse(read('manifest.json')).description, page.match(/<meta name="description" content="([^"]+)">/)[1], 'manifest.json has the description of the page');
+
+  const readme = read('README.md');
+  assert.ok(readme.includes(`${Words} free mini-games`), `README.md says "${Words}"`);
+  assert.deepEqual(games.filter((name) => !readme.includes(`| **${name}** |`)), [], 'README.md describes every game');
+  assert.equal([...readme.matchAll(/^\| \*\*(.+?)\*\* \|/gm)].length, n, 'and no game that is not there');
+  assert.ok(read('CHANGELOG.md').includes(words), `CHANGELOG.md mentions that there are ${words} games now`);
+
+  const picture = read('tools/art/og.html');
+  assert.ok(picture.includes(`<span>${n} free mini-games</span>`), `tools/art/og.html says ${n}`);
+  const chips = [...picture.match(/<div class="chips">([\s\S]*?)<\/div>/)[1].matchAll(/<span[^>]*>([^<]+)<\/span>/g)].map((m) => m[1]);
+  const named = chips.filter((c) => !/^\+\d+ more$/.test(c));
+  assert.deepEqual(named.filter((name) => !games.includes(name)), [], 'the sharing picture names real games');
+  assert.deepEqual(chips.filter((c) => /^\+\d+ more$/.test(c)), n > named.length ? [`+${n - named.length} more`] : [], 'and counts the rest right');
 });

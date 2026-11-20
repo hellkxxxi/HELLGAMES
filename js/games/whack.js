@@ -17,7 +17,7 @@ const CRITTER = `<svg viewBox="0 0 100 100" stroke="#3b0a0a" stroke-width="2.4" 
 const KEYMAP = '789456123';
 
 export default {
-  id: 'whack', name: 'Whack-a-Mole', icon: 'hammer', color: '#fb923c', tag: 'Reflex',
+  id: 'whack', name: 'Whack-a-Mole', icon: 'hammer', color: '#fb923c', tag: 'Skill',
   desc: 'Little devils pop out of the lava pits. Bop as many as you can in 30 seconds.',
   help: 'Click or tap the devils · number keys 1–9 work too',
   create(stage, api) {

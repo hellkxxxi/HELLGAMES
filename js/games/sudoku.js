@@ -94,7 +94,7 @@ const MOVES = { ArrowUp: -9, ArrowDown: 9, ArrowLeft: -1, ArrowRight: 1 };
 const clock = (v) => `${Math.floor(v / 60)}:${String(v % 60).padStart(2, '0')}`;
 
 export default {
-  id: 'sudoku', name: 'Sudoku', icon: 'grid-3x3', color: '#2dd4bf', tag: 'Logic',
+  id: 'sudoku', name: 'Sudoku', icon: 'grid-3x3', color: '#2dd4bf', tag: 'Puzzle',
   desc: 'Every row, column and box needs the numbers 1 to 9. Three levels, notes and hints.',
   help: 'Pick a cell, then a number · N switches notes · Backspace erases · Ctrl+Z takes a step back',
   scoreLabel: 'Time', lowerBetter: true, format: clock,

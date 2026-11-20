@@ -1,4 +1,5 @@
 import { drawIcons, fitCanvas, loop, noScroll } from '../util.js';
+import { createSynth } from '../synth.js';
 
 // ---------------------------------------------------------------- tuning
 const KEYS = ['d', 'f', 'j', 'k'];
@@ -7,34 +8,38 @@ export const WINDOWS = { perfect: 0.05, great: 0.095, good: 0.14 }; // how many 
 const WEIGHT = { perfect: 1, great: 0.75, good: 0.4, miss: 0 };     // share of a note's points
 const RELEASE_SLACK = 0.14;                                         // a long note may be let go this much before its end
 export const MAX_SCORE = 100000;
-const VOLUME = 0.6;
 // bpm: tempo · bars: length of the tune · approach: seconds a note takes to fall to the line
 // doubles: chance of two notes at once on the first beat of a bar
 const MODES = {
   easy: { bpm: 96, bars: 20, approach: 1.3, doubles: 0 },
   normal: { bpm: 122, bars: 24, approach: 1.05, doubles: 0.3 },
   hard: { bpm: 146, bars: 32, approach: 0.85, doubles: 0.55 },
+  hell: { bpm: 172, bars: 40, approach: 0.7, doubles: 0.7 },
 };
 // One bar is 16 steps; x marks a note of the melody. A bar from ENDINGS closes every eight-bar part.
 const RHYTHMS = {
   easy: ['x...x...x...x...', 'x...x...x.x.x...', 'x.x.x...x...x...', 'x...x.x.x...x...', 'x.......x...x...', 'x.x.x.x.x...x...'],
   normal: ['x.x.x.x.x.x.x...', 'x...x.x.x.xxx...', 'x.xxx...x.x.x.x.', 'x.x...x.x.x.x...', 'x..x..x.x..x..x.', 'x.......x.x.x.x.', 'x.x.xxx.x.x.x...'],
   hard: ['x.xxx.xxx.xxx.x.', 'xxxxx.x.xxxxx.x.', 'x.x.xxxxx.x.xxxx', 'x..x..x.x..x..xx', 'xxx.xxx.xxx.x.x.', 'x.xxx.x.x.xxx.x.', 'x.xxx.xxx.x.xxxx'],
+  hell: ['xxxxxxxxx.x.xxxx', 'x.xxxxxxx.xxx.x.', 'xxxxx.xxxxxxx.x.', 'x.xxx.xxxxxxxxxx', 'xxx.xxx.xxxxxxx.', 'xxxxxxx.xxxxxxx.', 'x.x.xxxxxxxxx.xx'],
 };
 const ENDINGS = {
   easy: ['x...x...x.......', 'x.x.x...x.......'],
   normal: ['x.x.x.x.x.......', 'x.xxx.x.x.......'],
   hard: ['xxxxx.xxx.......', 'x.xxxxxxx.......'],
+  hell: ['xxxxxxxxx.......', 'xxxxx.xxx.......'],
 };
 const DRUMS = {
   easy: { kick: 'x.......x.......', snare: '....x.......x...', hat: 'x.x.x.x.x.x.x.x.' },
   normal: { kick: 'x.......x.x.....', snare: '....x.......x...', hat: 'x.x.x.x.x.x.x.x.' },
   hard: { kick: 'x.....x.x.x.....', snare: '....x.......x...', hat: 'x.x.x.xxx.x.x.xx' },
+  hell: { kick: 'x...x...x...x.x.', snare: '....x.......x...', hat: 'xxxxxxxxxxxxxxxx' },
 };
-const BASS = { easy: 'r.......r.....r.', normal: 'r.r.r.r.r.r.r.5.', hard: 'r.r.o.r.r.r.o.5.' }; // r root, o an octave up, 5 the fifth
+const BASS = { easy: 'r.......r.....r.', normal: 'r.r.r.r.r.r.r.5.', hard: 'r.r.o.r.r.r.o.5.', hell: 'r.rorororo.ror5.' }; // r root, o an octave up, 5 the fifth
 const SCALE = [0, 2, 3, 5, 7, 8, 10];                                                          // natural minor
 const CHORDS = [[0, 5, 2, 6], [0, 3, 5, 4], [0, 6, 5, 6], [5, 6, 0, 0], [0, 2, 6, 5], [0, 5, 3, 6]]; // one chord per bar
-const semitones = (degree) => 12 * Math.floor(degree / 7) + SCALE[((degree % 7) + 7) % 7];
+// How many semitones above the keynote a step of the scale lies; step 7 is the keynote an octave up, step -1 the note below it.
+export const semitones = (degree) => 12 * Math.floor(degree / 7) + SCALE[((degree % 7) + 7) % 7];
 
 // ---------------------------------------------------------------- composing a tune (nothing is played or drawn here)
 // Returns the notes to hit and every sound of the backing track, both made from the same melody, so
@@ -117,7 +122,7 @@ export function makeSong(modeId, random = Math.random) {
       prevPitch = pitch;
       const got = place(t, lane, len);
       if (got >= 0) lane = got;
-      const chance = s === 0 ? mode.doubles : s === 8 && modeId === 'hard' ? mode.doubles / 2 : 0;
+      const chance = s === 0 ? mode.doubles : s === 8 && mode.doubles > 0.5 ? mode.doubles / 2 : 0;
       if (got >= 0 && random() < chance) place(t, 3 - got, 0);
     });
   }
@@ -133,7 +138,8 @@ export function makeSong(modeId, random = Math.random) {
 
   sounds.sort((x, y) => x.t - y.t);
   notes.sort((x, y) => x.t - y.t || x.lane - y.lane);
-  return { mode: modeId, bpm: mode.bpm, beat, approach: mode.approach, firstBar: start + bar, notes, sounds, length: end + 2.2 };
+  // root: the keynote of the melody as a MIDI number; every note of the melody is root + semitones(some step)
+  return { mode: modeId, bpm: mode.bpm, beat, bars: mode.bars, approach: mode.approach, firstBar: start + bar, root: leadRoot, notes, sounds, length: end + 2.2 };
 }
 
 // ---------------------------------------------------------------- judging (nothing is drawn here either)
@@ -192,80 +198,6 @@ export function createRun(chart) {
 }
 export const grade = (accuracy) => (accuracy >= 1 ? 'SS' : accuracy >= 0.95 ? 'S' : accuracy >= 0.9 ? 'A' : accuracy >= 0.8 ? 'B' : accuracy >= 0.7 ? 'C' : 'D');
 
-// ---------------------------------------------------------------- sound
-// A tiny synthesizer: drums, bass, soft chords and a lead voice. Returns null where sound is not available;
-// the game then simply runs silently.
-function createSynth() {
-  const AC = window.AudioContext || window.webkitAudioContext;
-  let ac;
-  try { ac = new AC(); } catch { return null; }
-  const master = ac.createGain(), limiter = ac.createDynamicsCompressor();
-  // the limiter only catches the loudest peaks, so the drums do not push the melody down
-  limiter.threshold.value = -8; limiter.knee.value = 6; limiter.ratio.value = 8; limiter.attack.value = 0.003; limiter.release.value = 0.12;
-  master.gain.value = VOLUME; master.connect(limiter); limiter.connect(ac.destination);
-  const bus = (cutoff) => { const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = cutoff; f.connect(master); return f; };
-  const leadBus = bus(2800), bassBus = bus(480), padBus = bus(1400);
-  const noise = ac.createBuffer(1, ac.sampleRate, ac.sampleRate), data = noise.getChannelData(0);
-  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-  const hz = (midi) => 440 * 2 ** ((midi - 69) / 12);
-
-  function tone(out, type, freq, when, dur, peak, attack = 0.006, release = 0.07) {
-    const o = ac.createOscillator(), g = ac.createGain();
-    o.type = type; o.frequency.value = freq;
-    g.gain.setValueAtTime(0.0001, when);
-    g.gain.linearRampToValueAtTime(peak, when + attack);
-    g.gain.linearRampToValueAtTime(peak * 0.75, when + attack + Math.min(0.09, dur));
-    g.gain.setValueAtTime(peak * 0.75, when + attack + dur);
-    g.gain.linearRampToValueAtTime(0.0001, when + attack + dur + release);
-    o.connect(g); g.connect(out);
-    o.start(when); o.stop(when + attack + dur + release + 0.02);
-  }
-  function burst(when, dur, peak, type, freq) { // a short piece of filtered noise
-    const src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
-    src.buffer = noise; src.loop = true; f.type = type; f.frequency.value = freq;
-    g.gain.setValueAtTime(peak, when); g.gain.exponentialRampToValueAtTime(0.0008, when + dur);
-    src.connect(f); f.connect(g); g.connect(master);
-    src.start(when, Math.random() * 0.5); src.stop(when + dur + 0.02);
-  }
-  function play(s, when) {
-    const v = s.vel;
-    if (s.kind === 'kick') {
-      const o = ac.createOscillator(), g = ac.createGain();
-      o.frequency.setValueAtTime(165, when); o.frequency.exponentialRampToValueAtTime(46, when + 0.11);
-      g.gain.setValueAtTime(0.8 * v, when); g.gain.exponentialRampToValueAtTime(0.001, when + 0.27);
-      o.connect(g); g.connect(master); o.start(when); o.stop(when + 0.3);
-    } else if (s.kind === 'snare') { burst(when, 0.17, 0.42 * v, 'highpass', 1600); tone(master, 'triangle', 190, when, 0.03, 0.3 * v, 0.002, 0.06); }
-    else if (s.kind === 'hat') burst(when, 0.045, 0.2 * v, 'highpass', 8000);
-    else if (s.kind === 'crash') burst(when, 1.1, 0.24 * v, 'highpass', 4500);
-    else if (s.kind === 'tick') tone(master, 'square', 1100, when, 0.02, 0.16 * v, 0.002, 0.03);
-    else if (s.kind === 'bass') tone(bassBus, 'sawtooth', hz(s.midi), when, s.dur, 0.34 * v, 0.008, 0.06);
-    else if (s.kind === 'pad') tone(padBus, 'triangle', hz(s.midi), when, s.dur, 0.085 * v, 0.06, 0.25);
-    else if (s.kind === 'lead') tone(leadBus, 'square', hz(s.midi), when, s.dur, 0.2 * v);
-  }
-
-  let next = 0, gapToWall = null;
-  return {
-    // Hands the sounds that are due in the next moments to the browser. The game runs on its own clock;
-    // the sound follows it, so a hiccup in the audio can never freeze the notes.
-    feed(sounds, songNow) {
-      if (ac.state !== 'running') return;
-      const wall = performance.now() / 1000, gap = wall - ac.currentTime;
-      gapToWall = gapToWall === null || Math.abs(gap - gapToWall) > 0.06 ? gap : gapToWall + (gap - gapToWall) * 0.03;
-      const audioNow = wall - gapToWall, lag = Math.min(0.35, ac.outputLatency || ac.baseLatency || 0); // time the sound needs to reach the ears
-      while (next < sounds.length && sounds[next].t < songNow + 0.2 + lag) {
-        const s = sounds[next++], when = audioNow + (s.t - songNow) - lag;
-        if (when > ac.currentTime - 0.04) play(s, Math.max(when, ac.currentTime));
-      }
-    },
-    mute(on) { master.gain.value = on ? 0 : VOLUME; },
-    wake() { if (ac.state !== 'running') ac.resume().catch(() => {}); },
-    pause() { ac.suspend().catch(() => {}); },
-    resume() { gapToWall = null; ac.resume().catch(() => {}); },
-    close() { ac.close().catch(() => {}); },
-    get running() { return ac.state === 'running'; },
-  };
-}
-
 // ---------------------------------------------------------------- the game on screen
 const HEAD = ['#818cf8', '#22d3ee', '#22d3ee', '#818cf8'];  // colour of the notes in each lane
 const BODY = ['#3f4494', '#0e6a7c', '#0e6a7c', '#3f4494'];  // the tail of a long note
@@ -278,7 +210,7 @@ export default {
   id: 'mania', name: 'Key Mania', icon: 'keyboard-music', color: '#818cf8', tag: 'Rhythm',
   desc: 'Notes fall down four lanes: hit each one right on the beat. A new tune every round.',
   help: 'D F J K or the arrow keys · on a phone tap the lanes · keep long notes held · P to pause',
-  variants: { easy: 'Easy', normal: 'Normal', hard: 'Hard' },
+  variants: { easy: 'Easy', normal: 'Normal', hard: 'Hard', hell: 'Hell' },
   create(stage, api) {
     stage.innerHTML = `
       <div class="mn-top">

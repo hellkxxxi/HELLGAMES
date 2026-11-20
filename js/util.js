@@ -14,6 +14,19 @@ export const randInt = (n) => Math.floor(Math.random() * n);
 
 export const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
+// Puts a text on the clipboard and says whether that worked: a browser may allow it only on a secure
+// page, or only right after a click.
+export async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); return true; } catch { /* no permission: the old way, then */ }
+  const box = document.createElement('textarea');
+  box.value = text; box.setAttribute('readonly', ''); box.style.cssText = 'position:fixed;opacity:0';
+  document.body.append(box); box.select();
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch { /* nothing more to try */ }
+  box.remove();
+  return ok;
+}
+
 // Keeps a canvas' pixel size in sync with its size on screen (sharp on HiDPI displays).
 // Calls onResize(width, height, dpr) after every change; returns a function that stops watching.
 export function fitCanvas(cv, onResize) {

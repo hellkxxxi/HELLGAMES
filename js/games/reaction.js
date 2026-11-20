@@ -3,7 +3,7 @@ import { drawIcons } from '../util.js';
 const ROUNDS = 5;
 
 export default {
-  id: 'reaction', name: 'Reaction Test', icon: 'timer', color: '#22d3ee', tag: 'Reflex',
+  id: 'reaction', name: 'Reaction Test', icon: 'timer', color: '#22d3ee', tag: 'Skill',
   desc: 'Click the moment the screen turns green. Average of five tries.',
   help: 'Click, tap or press Space when it turns green',
   scoreLabel: 'Avg', lowerBetter: true, initialScore: '–',

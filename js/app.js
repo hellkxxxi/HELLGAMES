@@ -14,11 +14,45 @@ import mines from './games/mines.js';
 import memory from './games/memory.js';
 import reaction from './games/reaction.js';
 import whack from './games/whack.js';
+import hellword from './games/hellword.js';
+import pong from './games/pong.js';
+import slots from './games/slots.js';
+import dice from './games/dice.js';
+import soulmines from './games/soulmines.js';
+import beats from './games/beats.js';
+import sand from './games/sand.js';
+import mahjong from './games/mahjong.js';
+import names from './games/names.js';
+import circles from './games/circles.js';
+import catcher from './games/catcher.js';
+import sens from './games/sens.js';
+import stroop from './games/stroop.js';
+import odd from './games/odd.js';
+import rps from './games/rps.js';
+import run from './games/run.js';
+import rain from './games/rain.js';
+import maze from './games/maze.js';
+import pipes from './games/pipes.js';
+import untangle from './games/untangle.js';
+import gems from './games/gems.js';
+import blackjack from './games/blackjack.js';
+import chess from './games/chess.js';
+import durak from './games/durak.js';
+import lasthit from './games/lasthit.js';
+import peek from './games/peek.js';
+import onetap from './games/onetap.js';
 
 const SITE = 'hellgames by hellkai';
-const VERSION = '1.0.0';
-// The games appear on the home page in this order.
-const games = [aim, mania, helltype, helltris, hellman, hellybird, lines, sudoku, draw, snake, g2048, mines, memory, reaction, whack];
+const VERSION = '1.1.0';
+// The games appear on the home page in this order. The filter buttons above them are the tags of the
+// games, in the order in which the tags first turn up in this list.
+const games = [
+  aim, mania, circles, catcher, helltype, hellword, helltris, hellman, hellybird, run, chess, durak, pong, snake, rain,
+  slots, blackjack, dice, soulmines, beats, sand, draw, gems, mahjong, pipes, maze, untangle, lines, sudoku, g2048, mines, memory,
+  peek, onetap, lasthit, stroop, odd, reaction, whack, rps, sens, names,
+];
+// A game is marked "New" on the home page while its `since` is the current version without the last number.
+const SERIES = VERSION.split('.').slice(0, 2).join('.');
 const $ = (id) => document.getElementById(id);
 
 // Everything is saved on this device only. The "arcade:" prefix is the original one, kept so saved scores survive.
@@ -42,10 +76,13 @@ for (const [from, to] of Object.entries(RENAMED)) {
   if (store.get('best:' + to) === null) store.set('best:' + to, old);
   store.remove('best:' + from);
 }
+// The mode played last time. A new player gets the game's own suggestion (g.defaultVariant), or the first mode.
 const savedVariant = (g) => {
   if (!g.variants) return null;
   const v = store.get('variant:' + g.id);
-  return v && g.variants[v] ? v : Object.keys(g.variants)[0];
+  if (v && g.variants[v]) return v;
+  const suggested = g.defaultVariant ? g.defaultVariant() : null;
+  return suggested && g.variants[suggested] ? suggested : Object.keys(g.variants)[0];
 };
 
 const fmt = (g, v) => (v == null || typeof v !== 'number') ? (v ?? '–') : (g.format ? g.format(v) : String(v));
@@ -56,15 +93,22 @@ let inst = null;
 let ovAction = null;
 let ovReadyAt = 0;
 
+let category = 'All'; // the filter chosen on the home page; lasts until the page is reloaded
+
 function renderHome() {
-  $('grid').innerHTML = games.map((g) => {
+  const tags = [...new Set(games.map((g) => g.tag))];
+  if (category !== 'All' && !tags.includes(category)) category = 'All';
+  const count = (tag) => (tag === 'All' ? games.length : games.filter((g) => g.tag === tag).length);
+  $('cats').innerHTML = ['All', ...tags].map((tag) =>
+    `<button class="chip${tag === category ? ' on' : ''}" data-cat="${tag}" aria-pressed="${tag === category}">${tag} <span>${count(tag)}</span></button>`).join('');
+  $('grid').innerHTML = games.filter((g) => category === 'All' || g.tag === category).map((g) => {
     const v = savedVariant(g);
-    const bestLine = g.noScore ? '' : `<div class="best"><i data-lucide="trophy" style="width:13px;height:13px"></i> Best <b>${fmt(g, best.get(g, v))}</b>${v ? `<span>· ${g.variants[v]}</span>` : ''}</div>`;
+    const bestLine = g.noScore ? '' : `<div class="best"><i data-lucide="trophy" style="width:13px;height:13px"></i> ${g.bestLabel || 'Best'} <b>${fmt(g, best.get(g, v))}</b>${v ? `<span>· ${g.variants[v]}</span>` : ''}</div>`;
     return `
     <a href="#${g.id}" class="card" style="--c:${g.color}">
       <div class="card-icon"><i data-lucide="${g.icon}"></i></div>
       <div class="flex-1 min-w-0">
-        <div class="flex items-center justify-between gap-2"><h3>${g.name}</h3><span class="tag">${g.tag}</span></div>
+        <div class="flex items-center justify-between gap-2"><h3>${g.name}${g.since === SERIES ? ' <span class="new">New</span>' : ''}</h3><span class="tag">${g.tag}</span></div>
         <p>${g.desc}</p>
         ${bestLine}
       </div>
@@ -72,6 +116,12 @@ function renderHome() {
   }).join('');
   drawIcons();
 }
+$('cats').addEventListener('click', (e) => {
+  const chip = e.target.closest('[data-cat]');
+  if (!chip) return;
+  category = chip.dataset.cat;
+  renderHome();
+});
 
 function showOverlay({ title, text = '', button = 'Start', icon = 'play', onClick, wait = 300 }) {
   $('ov-title').textContent = title;
@@ -89,6 +139,8 @@ const overlayOpen = () => !$('overlay').classList.contains('hidden');
 const showBest = () => { $('g-best').textContent = fmt(current, best.get(current, variant)); };
 
 const api = {
+  // What follows a question mark in the address, as in #hellword?w=…: a game can be opened with something to do.
+  query: {},
   score(v) { $('g-score').textContent = fmt(current, v); },
   status(t) { $('g-status').textContent = t || ''; },
   overlay: showOverlay,
@@ -100,13 +152,16 @@ const api = {
     }
     return variant;
   },
+  // Saves a score as the best one if it beats the best so far, without ending the round. Says whether it did.
+  record(v) {
+    if (typeof v !== 'number' || current.noScore) return false;
+    const b = best.get(current, variant);
+    const better = current.lowerBetter ? (b == null || v < b) : (v > 0 && (b == null || v > b));
+    if (better) { best.set(current, variant, v); showBest(); }
+    return better;
+  },
   finish(v, opts = {}) {
-    let record = false;
-    if (typeof v === 'number') {
-      const b = best.get(current, variant);
-      const better = current.lowerBetter ? (b == null || v < b) : (v > 0 && (b == null || v > b));
-      if (better) { best.set(current, variant, v); record = true; showBest(); }
-    }
+    const record = api.record(v);
     showOverlay({
       title: opts.title || (record ? 'New best!' : opts.endTitle || 'Game over'),
       text: opts.text ?? (typeof v === 'number' ? `${current.scoreLabel || 'Score'}: ${fmt(current, v)}` : ''),
@@ -117,6 +172,14 @@ const api = {
     });
   },
 };
+
+// A long name gets smaller letters on a narrow screen rather than being cut short.
+function fitTitle() {
+  const title = $('g-title');
+  title.style.fontSize = '';
+  for (let size = parseFloat(getComputedStyle(title).fontSize); title.scrollWidth > title.clientWidth && size > 11;) title.style.fontSize = `${--size}px`;
+}
+window.addEventListener('resize', () => { if (current) fitTitle(); });
 
 function start() {
   if (inst && inst.destroy) inst.destroy();
@@ -133,9 +196,10 @@ function route() {
   if (inst && inst.destroy) inst.destroy();
   inst = null;
   hideOverlay();
-  const id = location.hash.slice(1);
+  const [id, query = ''] = location.hash.slice(1).split('?');
   if (RENAMED[id]) { location.replace('#' + RENAMED[id]); return; }
   const g = games.find((x) => x.id === id);
+  api.query = Object.fromEntries(new URLSearchParams(query));
   current = g || null;
   variant = g ? savedVariant(g) : null;
   $('home').classList.toggle('hidden', !!g);
@@ -151,8 +215,11 @@ function route() {
   $('g-title').textContent = g.name;
   $('g-help').textContent = g.help || '';
   $('g-score-label').textContent = g.scoreLabel || 'Score';
+  $('g-best-label').textContent = g.bestLabel || 'Best';
   $('play').classList.toggle('no-score', !!g.noScore);
+  $('g-restart').classList.toggle('hidden', !!g.noRestart); // a game with nothing to start over does without the button
   showBest();
+  fitTitle();
   start();
 }
 
@@ -170,13 +237,14 @@ $('g-restart').addEventListener('click', (e) => {
 });
 
 // Games get a simplified key event. Letters and digits are taken from the physical key, so controls
-// like WASD keep working whatever keyboard layout is active (Russian, for example).
+// like WASD keep working whatever keyboard layout is active (Russian, for example). A game that wants
+// the letter the player really typed, as a word game does, finds it in `char`.
 function gameKey(e) {
   const c = e.code || '';
   let key = e.key;
   if (/^Key[A-Z]$/.test(c)) key = c.slice(3).toLowerCase();
   else if (/^Digit\d$/.test(c)) key = c.slice(5);
-  return { key, code: c, repeat: e.repeat, shiftKey: e.shiftKey, ctrlKey: e.ctrlKey || e.metaKey, altKey: e.altKey };
+  return { key, char: e.key, code: c, repeat: e.repeat, shiftKey: e.shiftKey, ctrlKey: e.ctrlKey || e.metaKey, altKey: e.altKey };
 }
 const isTextField = (el) => !!el && (el.isContentEditable || el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && /^(text|search|number|email|url|password|tel)$/.test(el.type)));
 
@@ -218,16 +286,55 @@ wrap.addEventListener('touchend', (e) => {
   inst.swipe(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
 });
 
+// There are no accounts and no servers. Whoever wants the scores on another device, or safe from a
+// cleared browser, saves everything the site remembers to a file and loads that file where it is wanted.
+function saveFile() {
+  const data = {};
+  try {
+    const keys = Array.from({ length: localStorage.length }, (_, i) => localStorage.key(i)).filter((key) => key.startsWith('arcade:')).sort();
+    for (const key of keys) data[key] = localStorage.getItem(key);
+  } catch { /* nothing can be read: there is nothing to save then */ }
+  const count = Object.keys(data).length;
+  if (!count) { $('bk-msg').textContent = 'Nothing has been saved yet: play something first.'; return; }
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([JSON.stringify({ app: 'hellgames', version: VERSION, saved: new Date().toISOString(), data }, null, 1)], { type: 'application/json' }));
+  link.download = `hellgames-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.append(link); link.click(); link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 10000);
+  $('bk-msg').textContent = `Saved ${count} ${count === 1 ? 'entry' : 'entries'} to ${link.download}.`;
+}
+async function loadFile(file) {
+  let count = 0;
+  try {
+    const { app, data } = JSON.parse(await file.text());
+    const entries = Object.entries(data);
+    if (app !== 'hellgames' || entries.length > 5000 || !entries.every(([key, value]) => key.startsWith('arcade:') && typeof value === 'string' && value.length < 500000)) throw new Error('not a file of this site');
+    for (const [key, value] of entries) { localStorage.setItem(key, value); count++; }
+  } catch {
+    $('bk-msg').textContent = count ? 'The browser would not take all of it: some entries are missing.' : 'That is not a file saved from hellgames. Nothing was changed.';
+    return;
+  }
+  $('bk-msg').textContent = `Loaded ${count} ${count === 1 ? 'entry' : 'entries'}. The scores below are the ones from the file.`;
+  if (!current) renderHome();
+}
+$('bk-save').addEventListener('click', saveFile);
+$('bk-load').addEventListener('click', () => $('bk-file').click());
+$('bk-file').addEventListener('change', (e) => { const [file] = e.target.files; e.target.value = ''; if (file) loadFile(file); });
+
 window.addEventListener('hashchange', route);
 $('version').textContent = 'v' + VERSION;
 route();
 drawIcons();
 
 // After the first visit the site also opens without a connection (see sw.js). The worker is handed the
-// list of files this page has just loaded, so that all of them are available offline straight away.
+// list of files this page has just loaded, so that all of them are available offline straight away,
+// and the files that a game fetches only when it is opened: without them that game would need a
+// connection the first time.
+const LOADED_LATER = ['js/data/hellword.js'];
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').then(() => navigator.serviceWorker.ready).then((reg) => {
     const urls = performance.getEntriesByType('resource').map((r) => r.name).filter((u) => u.startsWith(location.origin));
-    reg.active.postMessage({ keep: [location.href.split('#')[0], ...urls] });
+    const page = location.href.split('#')[0];
+    reg.active.postMessage({ keep: [page, ...urls, ...LOADED_LATER.map((file) => new URL(file, page).href)] });
   }).catch(() => { /* no offline mode in this browser: the site works as usual */ });
 }

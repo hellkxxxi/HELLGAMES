@@ -103,7 +103,7 @@ function savedLang() {
 }
 
 export default {
-  id: 'helltype', name: 'Helltype', icon: 'keyboard', color: '#ff5a2a', tag: 'Typing',
+  id: 'helltype', name: 'Helltype', icon: 'keyboard', color: '#ff5a2a', tag: 'Words',
   desc: 'Type the words as fast and as cleanly as you can. 15, 30 or 60 seconds, English or Russian.',
   help: 'Just start typing · Backspace fixes mistakes · Tab or the restart button brings new words',
   scoreLabel: 'WPM',
@@ -210,7 +210,8 @@ export default {
 
     // Three letters in a row from the other alphabet: the keyboard is probably in the wrong layout.
     function watchLayout() {
-      const text = test.typed[test.index], got = text[text.length - 1], want = test.words[test.index][text.length - 1];
+      // A letter typed past the end of a word is held against the last letter of that word: short words count too.
+      const text = test.typed[test.index], word = test.words[test.index], got = text[text.length - 1], want = word[Math.min(text.length, word.length) - 1];
       if (!got || !want) return;
       if ((cyrillic(got) && latin(want)) || (latin(got) && cyrillic(want))) strangers++; else strangers = 0;
       const now = strangers >= 3;
