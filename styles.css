@@ -704,7 +704,11 @@ a.btn-icon:hover { color: var(--accent2); border-color: color-mix(in srgb, var(-
 
 /* One Tap */
 .ot-top { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:8px 18px; margin-bottom:12px; }
-.ot-set { display:flex; align-items:center; gap:8px; }
+.ot-set { display:flex; align-items:center; gap:8px; max-width:100%; }
+.ot-set .seg { flex-wrap:wrap; justify-content:center; min-width:0; }
 .ot-set > span { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--dim); }
 .onetap { display:block; width:min(100%, 820px, calc((100vh - 260px) * 2.2222)); width:min(100%, 820px, calc((100dvh - 260px) * 2.2222)); min-width:min(100%, 280px); aspect-ratio:20 / 9; border-radius:16px; box-shadow:0 0 0 1px var(--border); touch-action:none; cursor:none; user-select:none; -webkit-user-select:none; }
 @media (max-width:560px) { .onetap { aspect-ratio:14 / 9; } .ot-set .seg button { padding:7px 11px; } }
+/* five speeds side by side on a small phone */
+@media (max-width:380px) { .ot-set .seg button { padding:7px 8px; } }
+@media (max-width:359px) { .ot-set .seg button { padding:7px; font-size:12px; } }

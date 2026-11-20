@@ -49,8 +49,9 @@ Skill
 - **Hold the Angle**, for players of tactical shooters: somebody leans out of cover, and whoever fires first
   wins the duel.
 - **One Tap**, for the same players: the sights hold a gap at head height and do not move, somebody runs
-  across, and one click at the right moment is a headshot. The gap can be narrow, medium or wide, the
-  runners have four speeds, and every combination keeps a best score of its own.
+  across, and one click at the right moment is a headshot. The gap can be narrow, medium or wide, and the
+  runners have one of four speeds or, with Random, each a speed of its own. Every combination keeps a
+  best score of its own.
 - **Last Hit**, for players of MOBAs: strike the blow that finishes a creep, with a sword or with a bow.
 - **Stroop Test**: the word says one colour, the ink is another, and the ink is what counts.
 - **Odd One Out**: one tile of the field is not like the others.
