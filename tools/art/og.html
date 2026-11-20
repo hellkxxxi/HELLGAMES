@@ -27,6 +27,7 @@
   .chips { position: absolute; left: 80px; right: 70px; bottom: 50px; display: flex; flex-wrap: wrap; gap: 12px 10px; }
   .chips span { padding: 8px 17px 9px; font-size: 20px; font-weight: 500; white-space: nowrap; color: #eadfdd; border-radius: 999px; border: 1px solid rgba(255,120,70,.32); background: rgba(23,14,14,.78); }
   .chips .hot { color: #ffd9b0; border-color: rgba(255,120,60,.75); background: rgba(120,30,10,.55); }
+  .chips .more { color: #1b0d0a; font-weight: 700; border-color: transparent; background: linear-gradient(180deg, #ffd27a, #ff7a3d); }
 </style>
 </head>
 <body>
@@ -46,12 +47,13 @@
         <p class="by">by <b>hellkai</b></p>
       </div>
     </div>
-    <p class="line"><span>15 free mini-games</span> that start in one click</p>
+    <p class="line"><span>26 free mini-games</span> that start in one click</p>
     <p class="sub">No installs · no ads · no sign-up · works offline</p>
   </div>
   <div class="chips">
-    <span>Aim Trainer</span><span>Key Mania</span><span class="hot">Helltype</span><span class="hot">Helltris</span><span class="hot">Hell-Man</span><span class="hot">Helly Bird</span><span>Lines 98</span>
-    <span>Sudoku</span><span>Sketchpad</span><span>Snake</span><span>2048</span><span>Minesweeper</span><span>Memory Match</span><span>Reaction Test</span><span>Whack-a-Mole</span>
+    <!-- Some of the games by name; the last chip counts the rest. A test checks that the numbers add up. -->
+    <span>Aim Trainer</span><span>Key Mania</span><span class="hot">Circles of Hell</span><span class="hot">Helltype</span><span class="hot">Hellword</span><span class="hot">Helltris</span>
+    <span class="hot">Hell-Man</span><span class="hot">Helly Bird</span><span class="hot">Hell Pong</span><span>Mahjong</span><span>Soul Slots</span><span>Beat Maker</span><span>Sandbox</span><span class="more">+13 more</span>
   </div>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <h1 align="center">hellgames</h1>
 
 <p align="center">
-  Fifteen free mini-games that open straight in the browser, on a computer or a phone.<br>
+  Twenty-six free mini-games that open straight in the browser, on a computer or a phone.<br>
   No installs, no ads, no sign-up.
 </p>
 
@@ -15,27 +15,89 @@
 
 ## The games
 
+The buttons above the list on the home page show one kind of game at a time.
+
+### Rhythm
+
+Each of the three plays a tune that is composed anew for every round, on Easy, Normal or Hard.
+
+| Game | What you do | Controls |
+| --- | --- | --- |
+| **Key Mania** | Notes fall down four lanes. Hit each one on the beat and keep the long ones held. | `D` `F` `J` `K` or the arrow keys; on a phone, tap the lanes |
+| **Circles of Hell** | Circles appear all over the field. Click each one as its ring closes on it, and follow the sliders to their end. | Mouse and click, or `Z` `X`; on a phone, tap |
+| **Soul Catcher** | Squares fly at you down a tunnel. Be on the right cell of the grid when each one arrives. Nothing is clicked. | Mouse or finger; or the number pad, or `Q` `W` `E` / `A` `S` `D` / `Z` `X` `C` |
+
+### Skill
+
 | Game | What you do | Controls |
 | --- | --- | --- |
 | **Aim Trainer** | Click the targets as fast as you can for 30 seconds. Three modes: Gridshot, Flick and Precision. | Mouse or finger |
-| **Key Mania** | A four-lane rhythm game. Every round plays a newly composed tune; hit each note on the beat. Easy, Normal and Hard. | `D` `F` `J` `K` or the arrow keys; on a phone, tap the lanes |
+| **Reaction Test** | Click the moment the screen turns green. The score is the average of five tries. | Click, tap or `Space` |
+| **Whack-a-Mole** | Little devils pop out of lava pits. Bop as many as you can in 30 seconds. | Click, tap or the number keys |
+
+### Words
+
+| Game | What you do | Controls |
+| --- | --- | --- |
 | **Helltype** | A typing-speed test: 15, 30 or 60 seconds of English or Russian words, scored in words per minute. | Any keyboard, including the one on a phone |
+| **Hellword** | Guess a five-letter word in six tries, in English or in Russian. Each language keeps a winning streak of its own. | Any keyboard, or the one on the screen |
+| **Name Forge** | A toy rather than a game: it makes up nicknames, fantasy names and words that only sound real, in English and Russian. | Click a name to copy it, `Space` for more |
+
+### Puzzle
+
+| Game | What you do | Controls |
+| --- | --- | --- |
 | **Helltris** | Falling blocks with a ghost piece, a hold slot and a preview of the next three pieces. | Arrow keys, `Space` to drop, `C` to hold; buttons on a phone |
-| **Hell-Man** | Clear a maze of dots while four ghosts, each with a character of its own, hunt you. | Arrow keys, `W` `A` `S` `D` or swipes |
-| **Helly Bird** | Flap a little devil between the pillars of hell. One touch and it is over. | Click, tap or `Space` |
+| **Mahjong** | Mahjong solitaire: clear the table by taking free tiles in matching pairs. Two layouts, hints, shuffle and undo. Every deal can be won. | Mouse or finger |
 | **Lines 98** | Move balls to line up five of one colour. Three more drop in after every move. | Mouse or finger |
 | **Sudoku** | Three levels with pencil notes, hints and undo. Every puzzle has exactly one solution. | Mouse or finger, number keys |
-| **Sketchpad** | A blank page, a brush, an eraser and a paint bucket. The drawing can be saved as a picture. | Mouse, pen or finger |
-| **Snake** | Eat, grow, and don't bite your own tail. | Arrow keys, `W` `A` `S` `D` or swipes |
 | **2048** | Slide and merge matching tiles until you reach 2048. | Arrow keys, `W` `A` `S` `D` or swipes |
 | **Minesweeper** | Clear the field without digging up a mine. | Click to dig; right-click or long-press to flag |
 | **Memory Match** | Find all eight pairs in as few moves as you can. | Mouse or finger |
-| **Reaction Test** | Click the moment the screen turns green. The score is the average of five tries. | Click, tap or `Space` |
-| **Whack-a-Mole** | Little devils pop out of lava pits. Bop as many as you can in 30 seconds. | Click, tap or the number keys |
+
+### Arcade
+
+| Game | What you do | Controls |
+| --- | --- | --- |
+| **Hell-Man** | Clear a maze of dots while four ghosts, each with a character of its own, hunt you. | Arrow keys, `W` `A` `S` `D` or swipes |
+| **Helly Bird** | Flap a little devil between the pillars of hell. One touch and it is over. | Click, tap or `Space` |
+| **Hell Pong** | First to seven, against the computer on three levels or against a friend on the same screen. | Mouse, finger, `W` `S` or the arrow keys |
+| **Snake** | Eat, grow, and don't bite your own tail. | Arrow keys, `W` `A` `S` `D` or swipes |
+
+### Casino
+
+The casino plays for souls, and souls are play money: they cannot be bought, sold or cashed out, and there is
+no real money anywhere on the site. Everybody starts with 1,000, and whoever runs out is handed 1,000 more.
+The odds are written down in the code and checked by the tests: in the long run the slot machine gives back
+96.3% of what is bet, the other two games 99%.
+
+| Game | What you do | Controls |
+| --- | --- | --- |
+| **Soul Slots** | Three reels. Three of a kind pay up to 200 times the bet, and any pair gives the bet back. | `Space` to spin, arrow keys for the bet |
+| **Soul Dice** | Choose your own odds, from a safe 98% to a 2% long shot that pays almost fifty times the bet, and roll. | `Space` to roll, arrow keys for the odds and the bet |
+| **Soul Mines** | Open tiles on a field that hides skulls. Every safe tile raises the prize; take it before a skull takes the bet. | Mouse or finger; `C` takes the prize |
+
+### Creative
+
+| Game | What you do | Controls |
+| --- | --- | --- |
+| **Beat Maker** | Switch on squares to build a loop of drums, bass and melody. All the notes belong to one scale, so nothing sounds wrong. | Mouse or finger, `Space` to play |
+| **Sandbox** | Pour sand, water, oil and lava, build with stone and wood, set it on fire and watch what happens. | Mouse or finger; `1` to `8` pick a material |
+| **Sketchpad** | A blank page, a brush, an eraser and a paint bucket. The drawing can be saved as a picture. | Mouse, pen or finger |
 
 Every game lists its controls under the playing field. `Esc` always leads back to the list of games.
 
 <table>
+  <tr>
+    <td><img src="docs/circles.png" alt="Circles of Hell: a slider being followed, and a numbered circle with a ring closing on it"></td>
+    <td><img src="docs/hellword.png" alt="Hellword: three guesses with green, yellow and grey letters, and a fourth one being typed"></td>
+    <td><img src="docs/mahjong.png" alt="Mahjong: a heap of stacked tiles, one of them picked up"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/sand.png" alt="Sandbox: a pool of water, a heap of sand and a wooden table set on fire by lava"></td>
+    <td><img src="docs/slots.png" alt="Soul Slots: three bells on the line, and the table of prizes"></td>
+    <td><img src="docs/beats.png" alt="Beat Maker: a grid of squares for drums, bass and melody"></td>
+  </tr>
   <tr>
     <td><img src="docs/helltype.png" alt="Helltype: a line of words being typed, one of them with a mistake"></td>
     <td><img src="docs/hellybird.png" alt="Helly Bird: a little devil flying between rock pillars above a lake of lava"></td>
@@ -53,8 +115,11 @@ Every game lists its controls under the playing field. `Esc` always leads back t
 - **Nothing to install.** Open the link and play, with a keyboard, a mouse or a touch screen.
 - **It works offline.** After the first visit the site opens without a connection. *Add to Home Screen* on a
   phone, or *Install* in a desktop browser, turns it into an app with an icon of its own.
-- **Your scores stay with you.** Best scores are kept in your browser, on your device. There are no accounts
-  and no servers, and nothing is sent anywhere. Clearing the browser's data for the site clears the scores too.
+- **Your scores stay with you.** Best scores, the purse of souls and the beat you made are kept in your
+  browser, on your device. There are no accounts and no servers, and nothing is sent anywhere. Clearing the
+  browser's data for the site clears them too.
+- **No sound files.** Every sound, from the tunes of the rhythm games to the drums of Beat Maker, is made
+  by a small synthesizer while you play.
 - **No build step.** The site is plain HTML, CSS and JavaScript modules. The files in this repository are
   exactly what the browser gets.
 
@@ -86,8 +151,11 @@ icon.png            the one icon of the site
 og.png              the picture that messengers show when the link is shared
 js/app.js           the host: list of games, navigation, best scores, keyboard, start and result screens
 js/util.js          small shared helpers
+js/synth.js         the synthesizer that makes every sound on the site
+js/rhythm.js        what the rhythm games share: the tune, its clock and the scoring
+js/casino.js        what the casino games share: the purse of souls and the bet
 js/games/           the games, one file each
-js/data/words.js    the word lists of Helltype
+js/data/            the word lists of Helltype (words.js) and of Hellword (hellword.js), and their licences
 js/vendor/          the Lucide icon set and its licence
 tools/              development tools: local server, tests, artwork scripts (the site itself needs none of it)
 docs/               the screenshots on this page
@@ -111,7 +179,7 @@ export default {
   name: 'Clicker',
   icon: 'mouse-pointer-click',    // any name from https://lucide.dev/icons
   color: '#f97316',               // the colour of its card
-  tag: 'Reflex',
+  tag: 'Skill',                   // its kind: the button above the list that it is found under
   desc: 'How many clicks can you make in five seconds?',
   help: 'Click or tap the button as fast as you can',
 
@@ -135,6 +203,9 @@ export default {
 For something bigger, `js/games/whack.js` and `js/games/reaction.js` are short games built from page elements,
 and `js/games/hellybird.js` is a short one drawn on a canvas.
 
+The buttons above the list of games are made from the tags, in the order in which the tags first turn up in
+the `games` list. A tag that no other game has adds a button.
+
 ### What a game can declare
 
 Besides the fields in the example, all of these are optional:
@@ -142,12 +213,15 @@ Besides the fields in the example, all of these are optional:
 | Field | Meaning |
 | --- | --- |
 | `variants: { easy: 'Easy', hard: 'Hard' }` | Modes. Each one keeps a best score of its own, and the first is the one a new player starts with. `api.variant()` returns the current mode, `api.variant('hard')` switches to another. |
+| `defaultVariant()` | Returns the mode a new player starts with when that is not simply the first one. Hellword uses it to begin in the language of the browser. |
 | `scoreLabel: 'Time'` | The caption of the score box. Without it the caption is "Score". |
+| `bestLabel: 'Top win'` | The caption of the best score, on the game screen and on the card. Without it the caption is "Best". |
 | `format(value)` | How a score is written out, for example seconds as `1:05`. |
 | `lowerBetter: true` | The lower score is the better one (times, numbers of moves). |
 | `noScore: true` | The game has no score. |
 | `initialScore: '–'` | What the score box shows before there is a score. Without it, 0. |
 | `swipe: true` | The game is steered by swipes, so the page must not scroll under the finger. |
+| `since: '1.1'` | The version in which the game appeared. Its card wears a "New" badge for as long as the site has that version; the third number of the version does not count. |
 
 ### What `create` can return
 
@@ -155,7 +229,7 @@ Every one of these is optional as well:
 
 | Function | When it is called |
 | --- | --- |
-| `key(e)` | A key went down. `e` is `{ key, code, repeat, shiftKey, ctrlKey, altKey }`. Letters and digits are named after the physical key (`'w'`, `'1'`), so `W` `A` `S` `D` works in every keyboard layout. Return `true` to keep the browser from acting on the key, such as scrolling the page. |
+| `key(e)` | A key went down. `e` is `{ key, char, code, repeat, shiftKey, ctrlKey, altKey }`. In `key`, letters and digits are named after the physical key (`'w'`, `'1'`), so `W` `A` `S` `D` works in every keyboard layout. `char` is what the key really types in the layout that is switched on (`'ц'`), which is what a game about words needs. Return `true` to keep the browser from acting on the key, such as scrolling the page. |
 | `keyup(e)` | A key was released. |
 | `shortcut(e)` | A combination with Ctrl, Cmd or Alt was pressed. Return `true` if the game used it. |
 | `swipe(direction)` | The player swiped `'up'`, `'down'`, `'left'` or `'right'`. |
@@ -172,6 +246,7 @@ result screen is open, `Enter` and `Space` press its button.
 | `api.score(value)` | Shows the current score. |
 | `api.status(text)` | Shows a short line under the name of the game. |
 | `api.finish(score, options)` | Ends the round: saves the score if it is the best so far and shows the result with a *Play again* button. `options.text` replaces the line under the title, `options.endTitle` the title itself ("Game over"). |
+| `api.record(score)` | Saves the score if it is the best so far and lets the round go on. For games without an end, such as the casino ones. |
 | `api.overlay({ title, text, button, icon, onClick })` | Puts a card over the game, such as a start or a pause screen. `onClick` runs when its button is pressed. |
 | `api.hideOverlay()` | Takes that card away. |
 | `api.variant(id)` | The current mode; see `variants` above. |
@@ -181,6 +256,20 @@ result screen is open, `Enter` and `Space` press its button.
 are written as `<i data-lucide="name"></i>`; the host draws the ones present when `create` returns, and
 `drawIcons()` draws those added later.
 
+For sound, `js/synth.js` has a synthesizer with drums, a bass and a few melodic voices. A browser lets a page
+make sound only after a click or a key press, so wake it up there:
+
+```js
+import { createSynth } from '../synth.js';
+
+const synth = createSynth();      // null in a browser that cannot make sound
+button.addEventListener('click', () => {
+  if (synth) synth.wake().then(() => synth.play({ kind: 'lead', midi: 69, dur: 0.2 })); // the note A, a fifth of a second
+});
+```
+
+The kinds of sound are listed at the top of that file, and `js/games/beats.js` is a short game built on it.
+
 ## Adding a language to Helltype
 
 1. In `js/data/words.js`, add a list to `WORDS`: a few hundred common words in lower case, separated by spaces
@@ -189,6 +278,16 @@ are written as `<i data-lucide="name"></i>`; the host draws the ones present whe
 
 The key is the two-letter code of the language. A visitor whose browser is set to that language starts with
 these words.
+
+## The words of Hellword
+
+`js/data/hellword.js` holds two lists for each language. `answers` are the words the game can pick: common
+ones that everybody knows, a few hundred of them. `guesses` are all the words it accepts as a try, and every
+answer has to be among them. All words have five letters and are written in lower case; Russian words are
+spelled with "е" in place of "ё".
+
+The lists were put together from two open word lists, whose licences are in `js/data/LICENSE-words.txt`. To
+add a language, add its lists there and its name and keyboard rows to `LANGS` in `js/games/hellword.js`.
 
 ## Changing the look
 

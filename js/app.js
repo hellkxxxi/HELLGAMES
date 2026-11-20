@@ -14,11 +14,28 @@ import mines from './games/mines.js';
 import memory from './games/memory.js';
 import reaction from './games/reaction.js';
 import whack from './games/whack.js';
+import hellword from './games/hellword.js';
+import pong from './games/pong.js';
+import slots from './games/slots.js';
+import dice from './games/dice.js';
+import soulmines from './games/soulmines.js';
+import beats from './games/beats.js';
+import sand from './games/sand.js';
+import mahjong from './games/mahjong.js';
+import names from './games/names.js';
+import circles from './games/circles.js';
+import catcher from './games/catcher.js';
 
 const SITE = 'hellgames by hellkai';
-const VERSION = '1.0.0';
-// The games appear on the home page in this order.
-const games = [aim, mania, helltype, helltris, hellman, hellybird, lines, sudoku, draw, snake, g2048, mines, memory, reaction, whack];
+const VERSION = '1.1.0';
+// The games appear on the home page in this order. The filter buttons above them are the tags of the
+// games, in the order in which the tags first turn up in this list.
+const games = [
+  aim, mania, circles, catcher, helltype, hellword, helltris, hellman, hellybird, pong, snake, slots, dice, soulmines,
+  beats, sand, draw, mahjong, lines, sudoku, g2048, mines, memory, reaction, whack, names,
+];
+// A game is marked "New" on the home page while its `since` is the current version without the last number.
+const SERIES = VERSION.split('.').slice(0, 2).join('.');
 const $ = (id) => document.getElementById(id);
 
 // Everything is saved on this device only. The "arcade:" prefix is the original one, kept so saved scores survive.
@@ -42,10 +59,13 @@ for (const [from, to] of Object.entries(RENAMED)) {
   if (store.get('best:' + to) === null) store.set('best:' + to, old);
   store.remove('best:' + from);
 }
+// The mode played last time. A new player gets the game's own suggestion (g.defaultVariant), or the first mode.
 const savedVariant = (g) => {
   if (!g.variants) return null;
   const v = store.get('variant:' + g.id);
-  return v && g.variants[v] ? v : Object.keys(g.variants)[0];
+  if (v && g.variants[v]) return v;
+  const suggested = g.defaultVariant ? g.defaultVariant() : null;
+  return suggested && g.variants[suggested] ? suggested : Object.keys(g.variants)[0];
 };
 
 const fmt = (g, v) => (v == null || typeof v !== 'number') ? (v ?? '–') : (g.format ? g.format(v) : String(v));
@@ -56,15 +76,22 @@ let inst = null;
 let ovAction = null;
 let ovReadyAt = 0;
 
+let category = 'All'; // the filter chosen on the home page; lasts until the page is reloaded
+
 function renderHome() {
-  $('grid').innerHTML = games.map((g) => {
+  const tags = [...new Set(games.map((g) => g.tag))];
+  if (category !== 'All' && !tags.includes(category)) category = 'All';
+  const count = (tag) => (tag === 'All' ? games.length : games.filter((g) => g.tag === tag).length);
+  $('cats').innerHTML = ['All', ...tags].map((tag) =>
+    `<button class="chip${tag === category ? ' on' : ''}" data-cat="${tag}" aria-pressed="${tag === category}">${tag} <span>${count(tag)}</span></button>`).join('');
+  $('grid').innerHTML = games.filter((g) => category === 'All' || g.tag === category).map((g) => {
     const v = savedVariant(g);
-    const bestLine = g.noScore ? '' : `<div class="best"><i data-lucide="trophy" style="width:13px;height:13px"></i> Best <b>${fmt(g, best.get(g, v))}</b>${v ? `<span>· ${g.variants[v]}</span>` : ''}</div>`;
+    const bestLine = g.noScore ? '' : `<div class="best"><i data-lucide="trophy" style="width:13px;height:13px"></i> ${g.bestLabel || 'Best'} <b>${fmt(g, best.get(g, v))}</b>${v ? `<span>· ${g.variants[v]}</span>` : ''}</div>`;
     return `
     <a href="#${g.id}" class="card" style="--c:${g.color}">
       <div class="card-icon"><i data-lucide="${g.icon}"></i></div>
       <div class="flex-1 min-w-0">
-        <div class="flex items-center justify-between gap-2"><h3>${g.name}</h3><span class="tag">${g.tag}</span></div>
+        <div class="flex items-center justify-between gap-2"><h3>${g.name}${g.since === SERIES ? ' <span class="new">New</span>' : ''}</h3><span class="tag">${g.tag}</span></div>
         <p>${g.desc}</p>
         ${bestLine}
       </div>
@@ -72,6 +99,12 @@ function renderHome() {
   }).join('');
   drawIcons();
 }
+$('cats').addEventListener('click', (e) => {
+  const chip = e.target.closest('[data-cat]');
+  if (!chip) return;
+  category = chip.dataset.cat;
+  renderHome();
+});
 
 function showOverlay({ title, text = '', button = 'Start', icon = 'play', onClick, wait = 300 }) {
   $('ov-title').textContent = title;
@@ -100,13 +133,16 @@ const api = {
     }
     return variant;
   },
+  // Saves a score as the best one if it beats the best so far, without ending the round. Says whether it did.
+  record(v) {
+    if (typeof v !== 'number' || current.noScore) return false;
+    const b = best.get(current, variant);
+    const better = current.lowerBetter ? (b == null || v < b) : (v > 0 && (b == null || v > b));
+    if (better) { best.set(current, variant, v); showBest(); }
+    return better;
+  },
   finish(v, opts = {}) {
-    let record = false;
-    if (typeof v === 'number') {
-      const b = best.get(current, variant);
-      const better = current.lowerBetter ? (b == null || v < b) : (v > 0 && (b == null || v > b));
-      if (better) { best.set(current, variant, v); record = true; showBest(); }
-    }
+    const record = api.record(v);
     showOverlay({
       title: opts.title || (record ? 'New best!' : opts.endTitle || 'Game over'),
       text: opts.text ?? (typeof v === 'number' ? `${current.scoreLabel || 'Score'}: ${fmt(current, v)}` : ''),
@@ -151,6 +187,7 @@ function route() {
   $('g-title').textContent = g.name;
   $('g-help').textContent = g.help || '';
   $('g-score-label').textContent = g.scoreLabel || 'Score';
+  $('g-best-label').textContent = g.bestLabel || 'Best';
   $('play').classList.toggle('no-score', !!g.noScore);
   showBest();
   start();
@@ -170,13 +207,14 @@ $('g-restart').addEventListener('click', (e) => {
 });
 
 // Games get a simplified key event. Letters and digits are taken from the physical key, so controls
-// like WASD keep working whatever keyboard layout is active (Russian, for example).
+// like WASD keep working whatever keyboard layout is active (Russian, for example). A game that wants
+// the letter the player really typed, as a word game does, finds it in `char`.
 function gameKey(e) {
   const c = e.code || '';
   let key = e.key;
   if (/^Key[A-Z]$/.test(c)) key = c.slice(3).toLowerCase();
   else if (/^Digit\d$/.test(c)) key = c.slice(5);
-  return { key, code: c, repeat: e.repeat, shiftKey: e.shiftKey, ctrlKey: e.ctrlKey || e.metaKey, altKey: e.altKey };
+  return { key, char: e.key, code: c, repeat: e.repeat, shiftKey: e.shiftKey, ctrlKey: e.ctrlKey || e.metaKey, altKey: e.altKey };
 }
 const isTextField = (el) => !!el && (el.isContentEditable || el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && /^(text|search|number|email|url|password|tel)$/.test(el.type)));
 
@@ -224,10 +262,14 @@ route();
 drawIcons();
 
 // After the first visit the site also opens without a connection (see sw.js). The worker is handed the
-// list of files this page has just loaded, so that all of them are available offline straight away.
+// list of files this page has just loaded, so that all of them are available offline straight away,
+// and the files that a game fetches only when it is opened: without them that game would need a
+// connection the first time.
+const LOADED_LATER = ['js/data/hellword.js'];
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').then(() => navigator.serviceWorker.ready).then((reg) => {
     const urls = performance.getEntriesByType('resource').map((r) => r.name).filter((u) => u.startsWith(location.origin));
-    reg.active.postMessage({ keep: [location.href.split('#')[0], ...urls] });
+    const page = location.href.split('#')[0];
+    reg.active.postMessage({ keep: [page, ...urls, ...LOADED_LATER.map((file) => new URL(file, page).href)] });
   }).catch(() => { /* no offline mode in this browser: the site works as usual */ });
 }

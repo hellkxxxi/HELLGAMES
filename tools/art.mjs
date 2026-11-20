@@ -105,6 +105,83 @@ async function screenshots() {
     }, 6);
     await sleep(wait);
   } });
+  await shoot('circles.png', '#circles', { seed: 6, play: async (page) => {
+    // As in Key Mania: the tune and its circles are worked out a second time and played without a mistake,
+    // up to the middle of the first slider that comes after the sixth second.
+    const wait = await page.evaluate(async (seed) => {
+      const { makeSong } = await import('./js/games/mania.js');
+      const { makeChart, ballAt, MODES } = await import('./js/games/circles.js');
+      const rnd = window.chance(seed), song = makeSong('easy', rnd), chart = makeChart(song, 'easy', rnd);
+      const cv = document.querySelector('#cr-c'), r = cv.getBoundingClientRect(), pad = (MODES.easy.radius + 0.035) * Math.min(r.width, r.height);
+      const at = (x, y) => ({ clientX: r.left + pad + x * (r.width - 2 * pad), clientY: r.top + pad + y * (r.height - 2 * pad) });
+      const fire = (type, x, y) => cv.dispatchEvent(new PointerEvent(type, { ...at(x, y), pointerId: 1, pointerType: 'mouse', button: 0, bubbles: true, cancelable: true }));
+      fire('pointerdown', 0.5, 0.5); fire('pointerup', 0.5, 0.5); // the first click starts the tune
+      const started = performance.now(), wait = (seconds) => seconds * 1000 - (performance.now() - started);
+      const slider = chart.find((o) => o.len && o.t > 6), end = slider.t + slider.len * 0.55;
+      for (const o of chart) {
+        if (o.t > end) break;
+        setTimeout(() => fire('pointerdown', o.x, o.y), wait(o.t));
+        if (o.len) for (let k = 1; k <= 30; k++) if (o.t + o.len * k / 30 <= end) setTimeout(() => fire('pointermove', ...ballAt(o, o.t + o.len * k / 30)), wait(o.t + o.len * k / 30));
+        if (o !== slider) setTimeout(() => fire('pointerup', ...(o.len ? o.path.at(-1) : [o.x, o.y])), wait(o.t + (o.len || 0.05)));
+      }
+      return wait(end);
+    }, 6);
+    await sleep(wait);
+  } });
+  await shoot('hellword.png', '#hellword', { seed: 3, play: async (page) => {
+    // Three tries that come closer and closer, picked from the common words by how they are marked.
+    const tries = await page.evaluate(async () => {
+      const { judge } = await import('./js/games/hellword.js');
+      const { HELLWORDS } = await import('./js/data/hellword.js');
+      const answer = JSON.parse(localStorage.getItem('arcade:hellword:round:en')).answer, used = new Set(answer);
+      const count = (word) => { const m = judge(word, answer); return [m.filter((x) => x === 'hit').length, m.filter((x) => x === 'near').length]; };
+      const find = (hits, nears) => { const w = HELLWORDS.en.answers.find((word) => !used.has(word) && String(count(word)) === String([hits, nears])); used.add(w); return w; };
+      return [find(0, 2), find(1, 2), find(3, 0), find(1, 1).slice(0, 2)];
+    });
+    for (const word of tries) {
+      await page.keyboard.type(word, { delay: 40 });
+      if (word.length === 5) { await page.keyboard.press('Enter'); await sleep(1400); }
+    }
+    await sleep(200);
+  } });
+  await shoot('mahjong.png', '#mahjong', { seed: 12, play: async (page) => {
+    // Nine pairs are taken, each time the first one there is, and a tile is picked up. The clock decides the moment.
+    for (let n = 0; n < 9; n++) {
+      const pair = await page.evaluate(() => {
+        const byFace = {};
+        for (const el of document.querySelectorAll('.mj-tile:not(.stuck):not(.gone)')) { (byFace[el.getAttribute('aria-label')] ||= []).push(el.dataset.i); if (byFace[el.getAttribute('aria-label')].length === 2) return byFace[el.getAttribute('aria-label')]; }
+      });
+      for (const i of pair) await page.click(`.mj-tile[data-i="${i}"]`);
+    }
+    await page.evaluate(() => document.querySelector('.mj-tile:not(.stuck):not(.gone)').click());
+    await page.waitForFunction(() => document.querySelector('#g-score').textContent === '0:07', { timeout: 20000 });
+  } });
+  await shoot('sand.png', '#sand', { seed: 7, play: async (page) => {
+    // The scene is started over with chance fixed, runs for exactly 230 steps and is paused: the same picture every time.
+    await page.evaluate((seed) => new Promise((done) => {
+      Math.random = window.chance(seed);
+      document.querySelector('#g-restart').click();
+      let frames = 0;
+      const frame = () => {
+        if (++frames < 230) { requestAnimationFrame(frame); return; }
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true }));
+        done();
+      };
+      requestAnimationFrame(frame);
+    }), 7);
+    await sleep(200);
+  } });
+  await shoot('slots.png', '#slots', { play: async (page) => {
+    // The reels are told where to stop: on three bells.
+    await page.evaluate(async () => {
+      const { REELS } = await import('./js/games/slots.js');
+      const stops = REELS.map((reel) => (reel.indexOf('bell') + 0.5) / reel.length);
+      Math.random = () => stops.shift() ?? 0.5;
+      document.querySelector('#sl-spin').click();
+    });
+    await sleep(2500);
+  } });
+  await shoot('beats.png', '#beats');
   await server.close();
 }
 

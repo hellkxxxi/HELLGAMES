@@ -4,7 +4,7 @@ const N = 10, MINES = 15;
 const NUM_COLORS = ['', '#60a5fa', '#4ade80', '#f87171', '#c084fc', '#fbbf24', '#22d3ee', '#f472b6', '#e8e3e3'];
 
 export default {
-  id: 'mines', name: 'Minesweeper', icon: 'bomb', color: '#f87171', tag: 'Logic',
+  id: 'mines', name: 'Minesweeper', icon: 'bomb', color: '#f87171', tag: 'Puzzle',
   desc: 'Clear the field without hitting a mine. Numbers show nearby mines.',
   help: 'Click to dig · right-click, long-press or Flag mode to mark mines',
   scoreLabel: 'Time', lowerBetter: true,

@@ -6,7 +6,7 @@ const SYMBOLS = [
 ];
 
 export default {
-  id: 'memory', name: 'Memory Match', icon: 'layers', color: '#a78bfa', tag: 'Memory',
+  id: 'memory', name: 'Memory Match', icon: 'layers', color: '#a78bfa', tag: 'Puzzle',
   desc: 'Flip cards and find all eight pairs in as few moves as possible.',
   help: 'Click two cards to flip them · fewer moves is better',
   scoreLabel: 'Moves', lowerBetter: true,

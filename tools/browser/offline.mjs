@@ -15,8 +15,10 @@ export default async function ({ t, browser }) {
   try {
     // ---- the first visit: everything the site consists of ends up on the device
     const page = await openPage(browser, url);
-    const expected = ['/', '/styles.css', '/tailwind.css', '/manifest.json', '/icon.png', '/js/app.js', '/js/util.js', '/js/vendor/lucide.js', '/js/data/words.js',
-      ...readdirSync(join(ROOT, 'js/games')).map((f) => '/js/games/' + f)];
+    const games = readdirSync(join(ROOT, 'js/games'));
+    const expected = ['/', '/styles.css', '/tailwind.css', '/manifest.json', '/icon.png', '/js/vendor/lucide.js', '/js/data/words.js',
+      '/js/data/hellword.js', // not loaded until Hellword is opened, and kept all the same
+      ...readdirSync(join(ROOT, 'js')).filter((f) => f.endsWith('.js')).map((f) => '/js/' + f), ...games.map((f) => '/js/games/' + f)];
     const kept = () => page.evaluate(async () => (await (await caches.open('hellgames')).keys()).map((r) => new URL(r.url).pathname));
     let have = [];
     for (let i = 0; i < 50; i++) { have = await kept(); if (expected.every((f) => have.includes(f))) break; await sleep(200); }
@@ -28,7 +30,7 @@ export default async function ({ t, browser }) {
     await server.close();
     await page.reload({ waitUntil: 'load' });
     await sleep(600);
-    t.equal(await page.$$eval('#grid .card', (list) => list.length), 15, 'offline: the home page opens with all its games');
+    t.equal(await page.$$eval('#grid .card', (list) => list.length), games.length, 'offline: the home page opens with all its games');
     t.check(await page.$eval('header img', (i) => i.complete && i.naturalWidth > 0), 'offline: the icon is there');
     t.check(await page.$eval('#grid .card-icon svg', (s) => s.childElementCount > 0), 'offline: the game icons are drawn');
     await page.evaluate(() => { location.hash = 'helltype'; });
@@ -37,6 +39,9 @@ export default async function ({ t, browser }) {
     await page.evaluate(() => { location.hash = 'hellybird'; });
     await sleep(600);
     t.check(await page.$eval('#hb-c', (c) => c.toDataURL().length > 3000), 'offline: Helly Bird draws its scene');
+    await page.evaluate(() => { location.hash = 'hellword'; });
+    await sleep(700);
+    t.equal(await page.$eval('#g-status', (e) => e.textContent), 'Guess 1 of 6', 'offline: Hellword has its words, although it was never opened before');
     t.problems(page, 'offline');
     const tab = await openPage(browser, url + '#snake');
     await sleep(500);

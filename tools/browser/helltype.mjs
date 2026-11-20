@@ -51,7 +51,7 @@ export default async function ({ t, open, url, browser }) {
   t.equal(await marks(1), 'o'.repeat(ws[1].length), 'the mistake is fixed');
   await page.keyboard.press('Backspace');
   await type(ws[2].slice(0, 2));
-  t.equal([await marks(1), (await marks(2)).slice(0, 2)], ['o'.repeat(ws[1].length), 'oo'], 'no going back into a word that is right');
+  t.equal([await marks(1), (await marks(2)).slice(0, 2)], ['o'.repeat(ws[1].length), 'o'.repeat(Math.min(2, ws[2].length))], 'no going back into a word that is right'); // the word may be “a”
   // Ctrl+Backspace deletes the whole word
   await page.keyboard.down('Control'); await page.keyboard.press('Backspace'); await page.keyboard.up('Control');
   t.equal(await marks(2), '.'.repeat(ws[2].length), 'Ctrl+Backspace clears the word');

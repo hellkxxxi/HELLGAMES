@@ -2,11 +2,17 @@
 import { sleep } from '../lib.mjs';
 
 const GAMES = [
-  ['aim', 'Aim Trainer'], ['mania', 'Key Mania'], ['helltype', 'Helltype'], ['helltris', 'Helltris'], ['hellman', 'Hell-Man'],
-  ['hellybird', 'Helly Bird'], ['lines', 'Lines 98'], ['sudoku', 'Sudoku'], ['draw', 'Sketchpad'], ['snake', 'Snake'],
-  ['2048', '2048'], ['mines', 'Minesweeper'], ['memory', 'Memory Match'], ['reaction', 'Reaction Test'], ['whack', 'Whack-a-Mole'],
+  ['aim', 'Aim Trainer'], ['mania', 'Key Mania'], ['circles', 'Circles of Hell'], ['catcher', 'Soul Catcher'], ['helltype', 'Helltype'], ['hellword', 'Hellword'],
+  ['helltris', 'Helltris'], ['hellman', 'Hell-Man'], ['hellybird', 'Helly Bird'], ['pong', 'Hell Pong'], ['snake', 'Snake'],
+  ['slots', 'Soul Slots'], ['dice', 'Soul Dice'], ['soulmines', 'Soul Mines'], ['beats', 'Beat Maker'], ['sand', 'Sandbox'], ['draw', 'Sketchpad'],
+  ['mahjong', 'Mahjong'], ['lines', 'Lines 98'], ['sudoku', 'Sudoku'], ['2048', '2048'], ['mines', 'Minesweeper'], ['memory', 'Memory Match'],
+  ['reaction', 'Reaction Test'], ['whack', 'Whack-a-Mole'], ['names', 'Name Forge'],
 ];
-const SITE = 'hellgames by hellkai', REPO = 'https://github.com/hellkxxxi/hellgames';
+const NO_SCORE = ['beats', 'sand', 'draw', 'names'];                    // nothing to count in these
+const TOP_WIN = ['slots', 'dice', 'soulmines'];                         // the casino keeps the biggest win instead of a best score
+const NEW = ['circles', 'catcher', 'hellword', 'pong', 'slots', 'dice', 'soulmines', 'beats', 'sand', 'mahjong', 'names']; // came with this version
+const KINDS = [['All', 26], ['Skill', 3], ['Rhythm', 3], ['Words', 3], ['Puzzle', 7], ['Arcade', 4], ['Casino', 3], ['Creative', 3]];
+const SITE = 'hellgames by hellkai', REPO = 'https://github.com/hellkxxxi/HELLGAMES';
 const OLD_NAMES = /tetris|pac-?man|flappy/i;
 
 const overlayOpen = (page) => page.$eval('#overlay', (o) => !o.classList.contains('hidden'));
@@ -45,17 +51,40 @@ export default async function ({ t, open, url }) {
   const page = await open();
   await sleep(500);
   t.equal(await page.title(), SITE, 'tab title of the home page');
-  const cards = await page.$$eval('#grid .card', (list) => list.map((c) => ({
-    id: c.getAttribute('href').slice(1), name: c.querySelector('h3').textContent, tag: c.querySelector('.tag').textContent,
-    text: c.querySelector('p').textContent, icon: !!c.querySelector('.card-icon svg'), best: c.querySelector('.best')?.textContent.replace(/\s+/g, ' ').trim(),
+  const readCards = () => page.$$eval('#grid .card', (list) => list.map((c) => ({
+    id: c.getAttribute('href').slice(1), name: c.querySelector('h3').firstChild.textContent.trim(), isNew: c.querySelector('h3 .new')?.textContent === 'New',
+    tag: c.querySelector('.tag').textContent, text: c.querySelector('p').textContent, icon: !!c.querySelector('.card-icon svg'),
+    best: c.querySelector('.best')?.textContent.replace(/\s+/g, ' ').trim(), inside: c.scrollWidth <= c.clientWidth + 1,
   })));
+  const cards = await readCards();
   t.equal(cards.map((c) => [c.id, c.name]), GAMES, 'the games on the home page, in order');
   for (const c of cards) {
     t.check(c.icon, `${c.id}: the card has its icon`);
     t.check(c.text.length > 20 && c.tag.length > 2, `${c.id}: the card has a description and a tag`);
-    t.check(c.id === 'draw' ? c.best === undefined : /^Best –/.test(c.best), `${c.id}: no best score yet (${c.best})`);
+    t.check(c.inside, `${c.id}: nothing sticks out of the card`);
+    const caption = TOP_WIN.includes(c.id) ? 'Top win' : 'Best';
+    t.check(NO_SCORE.includes(c.id) ? c.best === undefined : c.best.startsWith(caption + ' –'), `${c.id}: no best score yet (${c.best})`);
   }
+  t.equal(cards.filter((c) => c.isNew).map((c) => c.id).sort(), [...NEW].sort(), 'the games of this version wear a "New" badge');
   t.check(!OLD_NAMES.test(await page.$eval('#app', (e) => e.innerText)), 'no old game names on the home page');
+
+  // ---- the buttons that show one kind of game
+  const chips = () => page.$$eval('#cats [data-cat]', (list) => list.map((b) => [b.dataset.cat, Number(b.querySelector('span').textContent), b.getAttribute('aria-pressed') === 'true']));
+  t.equal((await chips()).map(([name, count]) => [name, count]), KINDS, 'the kinds of games and how many there are of each');
+  t.equal((await chips()).filter((c) => c[2]).map((c) => c[0]), ['All'], 'everything is shown at first');
+  for (const [kind, count] of KINDS.slice(1)) {
+    await page.click(`#cats [data-cat="${kind}"]`);
+    const shown = await readCards();
+    t.check(shown.length === count && shown.every((c) => c.tag === kind), `"${kind}" shows its ${count} games and no others`);
+    t.equal((await chips()).filter((c) => c[2]).map((c) => c[0]), [kind], `"${kind}" is marked as chosen`);
+  }
+  await page.click('#grid .card');
+  await sleep(400);
+  await page.keyboard.press('Escape');
+  await sleep(300);
+  t.equal((await readCards()).length, KINDS.at(-1)[1], 'the choice is still there after a game');
+  await page.click('#cats [data-cat="All"]');
+  t.equal((await readCards()).length, GAMES.length, '"All" brings every game back');
 
   const links = await page.$$eval(`a[href="${REPO}"]`, (list) => list.map((a) => ({ target: a.target, rel: a.rel, shown: a.getClientRects().length > 0, label: (a.getAttribute('aria-label') || a.textContent).trim() })));
   t.equal(links.length, 2, 'links to GitHub: one in the header, one in the footer');
