@@ -3,7 +3,7 @@
 <h1 align="center">hellgames</h1>
 
 <p align="center">
-  Thirty-seven free mini-games that open straight in the browser, on a computer or a phone.<br>
+  Forty-one free mini-games that open straight in the browser, on a computer or a phone.<br>
   No installs, no ads, no sign-up.
 </p>
 
@@ -34,9 +34,10 @@ Each of the three plays a tune that is composed anew for every round, on four le
 | **Aim Trainer** | Click the targets as fast as you can for 30 seconds. Three modes: Gridshot, Flick and Precision. | Mouse or finger |
 | **Reaction Test** | Click the moment the screen turns green. The score is the average of five tries. | Click, tap or `Space` |
 | **Whack-a-Mole** | Little devils pop out of lava pits. Bop as many as you can in 30 seconds. | Click, tap or the number keys |
+| **Hold the Angle** | For players of tactical shooters: somebody leans out of cover, and whoever fires first wins. A shot in the head ends it at once. The score is the average time of twelve duels. | Mouse and click, or tap |
+| **Last Hit** | For players of MOBAs: strike the blow that finishes a creep, with a sword or with a bow. Too early is wasted, too late and the creep is lost. | Click or tap a creep |
 | **Stroop Test** | The word says GREEN, the ink is red. Pick the colour of the ink, not the one the word names. 30 seconds, in English or Russian. | Click, tap or `1` to `4` |
 | **Odd One Out** | One tile is not like the others: a shade off, or another letter. Every find makes the field bigger and the difference smaller. | Mouse or finger |
-| **Rock Paper Scissors** | Against the devil, who learns your habits and bets on them. Wins in a row count. | Click, tap, `1` `2` `3` or `R` `P` `S` |
 | **Sens Converter** | A tool rather than a game: it carries a mouse sensitivity from one shooter to another (Valorant, Counter-Strike 2, Apex Legends, Fortnite, Overwatch 2, Call of Duty, Rainbow Six Siege, Team Fortress 2) and shows how far the mouse travels for a full turn. | Type the numbers; click a result to copy it |
 
 ### Words
@@ -73,6 +74,14 @@ Each of the three plays a tune that is composed anew for every round, on four le
 | **Hell Pong** | First to seven, against the computer on three levels or against a friend on the same screen. | Mouse, finger, `W` `S` or the arrow keys |
 | **Snake** | Eat, grow, and don't bite your own tail. | Arrow keys, `W` `A` `S` `D` or swipes |
 
+### Tabletop
+
+| Game | What you do | Controls |
+| --- | --- | --- |
+| **Chess** | The whole game, with castling, taking in passing, promotion and every kind of draw. Against the computer on three levels, or two players at one board. A game that is left unfinished is kept. | Click a piece, then its square; `U` takes a move back, `F` turns the board |
+| **Durak** | The card game of the fool, for two, against the devil: beat the cards that are led or take them, and do not be the last one holding any. | Click a card; `T` takes, `D` is done |
+| **Rock Paper Scissors** | Against the devil, who learns your habits and bets on them. Wins in a row count. | Click, tap, `1` `2` `3` or `R` `P` `S` |
+
 ### Casino
 
 The casino plays for souls, and souls are play money: they cannot be bought, sold or cashed out, and there is
@@ -99,6 +108,16 @@ The odds are written down in the code and checked by the tests: in the long run 
 Every game lists its controls under the playing field. `Esc` always leads back to the list of games.
 
 <table>
+  <tr>
+    <td><img src="docs/chess.png" alt="Chess: an Italian game, with the squares a knight can go to marked"></td>
+    <td><img src="docs/durak.png" alt="Durak: the devil leads the nine of clubs, and the player’s six cards wait below"></td>
+    <td><img src="docs/run.png" alt="Hell Run: a little devil in mid-air over a flame"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/gems.png" alt="Hellgems: a board of gems in six shapes and colours"></td>
+    <td><img src="docs/lasthit.png" alt="Last Hit: two rows of creeps with health bars, and gold for the one just finished"></td>
+    <td><img src="docs/peek.png" alt="Hold the Angle: a devil looks out from behind a barrel in a doorway, the sights on its head"></td>
+  </tr>
   <tr>
     <td><img src="docs/circles.png" alt="Circles of Hell: a slider being followed, and a numbered circle with a ring closing on it"></td>
     <td><img src="docs/hellword.png" alt="Hellword: three guesses with green, yellow and grey letters, and a fourth one being typed"></td>
@@ -129,6 +148,9 @@ Every game lists its controls under the playing field. `Esc` always leads back t
 - **Your scores stay with you.** Best scores, the purse of souls and the beat you made are kept in your
   browser, on your device. There are no accounts and no servers, and nothing is sent anywhere. Clearing the
   browser's data for the site clears them too.
+- **And they can travel.** At the bottom of the home page, *Save them to a file* writes everything the site
+  remembers into one small file, and *Load a saved file* reads it back: on another computer, on a phone, or
+  after the browser was cleared.
 - **No sound files.** Every sound, from the tunes of the rhythm games to the drums of Beat Maker, is made
   by a small synthesizer while you play.
 - **No build step.** The site is plain HTML, CSS and JavaScript modules. The files in this repository are
@@ -165,6 +187,8 @@ js/util.js          small shared helpers
 js/synth.js         the synthesizer that makes every sound on the site
 js/rhythm.js        what the rhythm games share: the tune, its clock and the scoring
 js/casino.js        what the casino games share: the purse of souls and the bet
+js/cards.js         playing cards, for Blackjack and Durak
+js/chess.js         the rules of chess and the computer that plays it
 js/games/           the games, one file each
 js/data/            the word lists of Helltype (words.js) and of Hellword (hellword.js), and their licences
 js/vendor/          the Lucide icon set and its licence
@@ -230,6 +254,7 @@ Besides the fields in the example, all of these are optional:
 | `format(value)` | How a score is written out, for example seconds as `1:05`. |
 | `lowerBetter: true` | The lower score is the better one (times, numbers of moves). |
 | `noScore: true` | The game has no score. |
+| `noRestart: true` | The game has nothing to start over, so the Restart button is left out. |
 | `initialScore: '–'` | What the score box shows before there is a score. Without it, 0. |
 | `swipe: true` | The game is steered by swipes, so the page must not scroll under the finger. |
 | `since: '1.1'` | The version in which the game appeared. Its card wears a "New" badge for as long as the site has that version; the third number of the version does not count. |
@@ -260,10 +285,12 @@ result screen is open, `Enter` and `Space` press its button.
 | `api.record(score)` | Saves the score if it is the best so far and lets the round go on. For games without an end, such as the casino ones. |
 | `api.overlay({ title, text, button, icon, onClick })` | Puts a card over the game, such as a start or a pause screen. `onClick` runs when its button is pressed. |
 | `api.hideOverlay()` | Takes that card away. |
+| `api.query` | What follows a question mark in the address: `#hellword?w=abc` gives `{ w: 'abc' }`. A game can be opened with something to do this way, as Hellword is with a word from a friend. |
 | `api.variant(id)` | The current mode; see `variants` above. |
 
 `js/util.js` has a few helpers: `fitCanvas` keeps a canvas sharp at any size, `loop` runs an animation,
-`noScroll` stops the page from moving under a finger, and there are `shuffle`, `randInt` and `clamp`. Icons
+`noScroll` stops the page from moving under a finger, `copyText` puts a text on the clipboard, and there are
+`shuffle`, `randInt` and `clamp`. Icons
 are written as `<i data-lucide="name"></i>`; the host draws the ones present when `create` returns, and
 `drawIcons()` draws those added later.
 

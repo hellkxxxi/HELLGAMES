@@ -182,6 +182,93 @@ async function screenshots() {
     await sleep(2500);
   } });
   await shoot('beats.png', '#beats');
+  await shoot('chess.png', '#chess', { play: async (page) => {
+    // An Italian game, eight moves in, put into the saved game of the page; then a knight is picked up to show where it can go.
+    await page.evaluate(async (moves) => {
+      const chess = await import('./js/chess.js'), p = chess.fromFEN(), codes = [];
+      for (const text of moves) { const m = chess.legalMoves(p).find((x) => chess.notation(p, x) === text); codes.push(`${m.from}-${m.to}-${m.promo}`); chess.play(p, m); }
+      localStorage.setItem('arcade:chess:game:normal', JSON.stringify({ human: true, moves: codes }));
+      localStorage.setItem('arcade:variant:chess', 'normal');
+      location.hash = '';
+    }, ['e4', 'e5', 'Nf3', 'Nc6', 'Bc4', 'Bc5', 'c3', 'Nf6', 'd3', 'd6', 'O-O', 'O-O', 'Bg5', 'h6', 'Bh4', 'Bg4']);
+    await sleep(300);
+    await page.evaluate(() => { location.hash = 'chess'; });
+    await sleep(600);
+    await page.click('.ch-sq[data-s="57"]'); // the knight on b1
+  } });
+  await shoot('durak.png', '#durak', { seed: 5, play: async (page) => {
+    // A few moves by the simplest of rules: the first card that may be played, or else take.
+    for (let n = 0; n < 6; n++) {
+      await page.waitForFunction(() => document.querySelector('#dk-hand .pc.can') || !document.querySelector('#dk-take').disabled, { timeout: 10000 });
+      await page.evaluate(() => (document.querySelector('#dk-hand .pc.can') || document.querySelector('#dk-take')).click());
+      await sleep(250);
+    }
+    await page.waitForFunction(() => document.querySelector('#dk-hand .pc.can') && document.querySelectorAll('#dk-table .dk-pair').length > 0, { timeout: 10000 }).catch(() => {});
+  } });
+  await shoot('run.png', '#run', { play: async (page) => {
+    // With chance at zero the course is a row of flames. The devil sets off, and is caught in the air over the second one.
+    await page.evaluate(() => new Promise((done) => {
+      Math.random = () => 0;
+      document.querySelector('#g-restart').click();
+      const score = document.querySelector('#g-score'), jump = () => document.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true }));
+      const jumps = [70, 106];
+      jump();
+      const watch = () => {
+        const now = Number(score.textContent);
+        if (jumps.length && now >= jumps[0]) { jump(); jumps.shift(); }
+        if (now >= 112) done(); else requestAnimationFrame(watch);
+      };
+      requestAnimationFrame(watch);
+    }));
+  } });
+  await shoot('gems.png', '#gems', { seed: 9, play: async (page) => {
+    // The first swap that lines something up, and then a gem picked up.
+    const cell = (n) => page.evaluate((c) => { const el = [...document.querySelectorAll('#gm-board .gm-gem')].find((g) => Number(g.style.getPropertyValue('--y')) * 8 + Number(g.style.getPropertyValue('--x')) === c), r = el.getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; }, n);
+    const move = await page.evaluate(async () => {
+      const colours = ['#ef4444', '#fb923c', '#facc15', '#22c55e', '#3b82f6', '#a855f7'], board = Array(64).fill(-1);
+      for (const el of document.querySelectorAll('#gm-board .gm-gem')) board[Number(el.style.getPropertyValue('--y')) * 8 + Number(el.style.getPropertyValue('--x'))] = colours.indexOf(el.querySelector('.gm-body').getAttribute('fill'));
+      return (await import('./js/games/gems.js')).findMove(board);
+    });
+    await page.mouse.click(...await cell(move[0])); await page.mouse.click(...await cell(move[1]));
+    await sleep(2600);
+    await page.mouse.click(...await cell(27));
+  } });
+  await shoot('lasthit.png', '#lasthit', { seed: 3, play: async (page) => {
+    // The lane is watched until an enemy creep can be finished; one blow, and the picture is taken as the gold comes up.
+    await page.evaluate(() => new Promise((done) => {
+      const cv = document.querySelector('#lh-c'), ctx = cv.getContext('2d'), W = cv.width, H = cv.height, r = Math.min(W, H) * 0.06, box = cv.getBoundingClientRect();
+      const click = (x, y) => cv.dispatchEvent(new PointerEvent('pointerdown', { clientX: box.left + x / W * box.width, clientY: box.top + y / H * box.height, pointerType: 'mouse', bubbles: true, cancelable: true }));
+      click(W / 2, H / 2);
+      let struck = 0;
+      const watch = (now) => {
+        if (struck) { if (now - struck > 520) done(); else requestAnimationFrame(watch); return; }
+        for (const slot of [0.2, 0.4, 0.6, 0.8]) {
+          const [red, green, blue] = ctx.getImageData(Math.round(slot * W - r * 1.4 + 2), Math.round(0.33 * H - r * 2.05 + Math.max(6, r * 0.4) / 2), 1, 1).data;
+          if (red > 240 && green > 200 && blue < 120) { click(slot * W, 0.33 * H); struck = now; break; }
+        }
+        requestAnimationFrame(watch);
+      };
+      requestAnimationFrame(watch);
+    }));
+  } });
+  await shoot('peek.png', '#peek', { seed: 2, play: async (page) => {
+    // Waits until somebody leans out, and takes the picture with the sights on its head.
+    const box = await (await page.$('#pk-c')).boundingBox();
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.45);
+    const head = await page.evaluate(() => new Promise((done) => {
+      const cv = document.querySelector('#pk-c'), ctx = cv.getContext('2d'), W = cv.width;
+      import('./js/games/peek.js').then(({ SPOTS, LEVELS }) => {
+        const r = LEVELS.normal.head;
+        const watch = () => {
+          for (const s of SPOTS) { const [red, green, blue] = ctx.getImageData(Math.round((s.x + r * 0.45) * W), Math.round((s.y + r * 0.45) * W), 1, 1).data; if (red > 225 && green > 55 && green < 85 && blue > 55 && blue < 85) { done([s.x, s.y]); return; } }
+          requestAnimationFrame(watch);
+        };
+        requestAnimationFrame(watch);
+      });
+    }));
+    await page.mouse.move(box.x + head[0] * box.width + 3, box.y + head[1] * box.width + 2);
+    await sleep(60);
+  } });
   await server.close();
 }
 

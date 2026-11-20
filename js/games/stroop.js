@@ -51,15 +51,13 @@ export default {
       now = { word: 1, ink: 0 }; showCard();
       api.status('The clock starts with your first answer');
     }
-    function begin() {
-      running = true; t0 = performance.now();
-      ticker = setInterval(() => {
-        const left = Math.max(0, SECONDS * 1000 - (performance.now() - t0));
-        bar.style.width = (left / (SECONDS * 10)) + '%';
-        api.status(`${Math.ceil(left / 1000)}s left`);
-        if (left <= 0) end();
-      }, 100);
+    function tick() {
+      const left = Math.max(0, SECONDS * 1000 - (performance.now() - t0));
+      bar.style.width = (left / (SECONDS * 10)) + '%';
+      api.status(`${Math.ceil(left / 1000)}s left`);
+      if (left <= 0) end();
     }
+    function begin() { running = true; t0 = performance.now(); ticker = setInterval(tick, 100); tick(); }
     function answer(k) {
       if (over) return;
       if (!running) begin();

@@ -36,14 +36,19 @@ import pipes from './games/pipes.js';
 import untangle from './games/untangle.js';
 import gems from './games/gems.js';
 import blackjack from './games/blackjack.js';
+import chess from './games/chess.js';
+import durak from './games/durak.js';
+import lasthit from './games/lasthit.js';
+import peek from './games/peek.js';
 
 const SITE = 'hellgames by hellkai';
 const VERSION = '1.1.0';
 // The games appear on the home page in this order. The filter buttons above them are the tags of the
 // games, in the order in which the tags first turn up in this list.
 const games = [
-  aim, mania, circles, catcher, helltype, hellword, helltris, hellman, hellybird, run, pong, snake, rain, slots, blackjack, dice, soulmines,
-  beats, sand, draw, gems, mahjong, pipes, maze, untangle, lines, sudoku, g2048, mines, memory, stroop, odd, reaction, whack, rps, sens, names,
+  aim, mania, circles, catcher, helltype, hellword, helltris, hellman, hellybird, run, chess, durak, pong, snake, rain,
+  slots, blackjack, dice, soulmines, beats, sand, draw, gems, mahjong, pipes, maze, untangle, lines, sudoku, g2048, mines, memory,
+  peek, lasthit, stroop, odd, reaction, whack, rps, sens, names,
 ];
 // A game is marked "New" on the home page while its `since` is the current version without the last number.
 const SERIES = VERSION.split('.').slice(0, 2).join('.');
@@ -279,6 +284,41 @@ wrap.addEventListener('touchend', (e) => {
   if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return;
   inst.swipe(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
 });
+
+// There are no accounts and no servers. Whoever wants the scores on another device, or safe from a
+// cleared browser, saves everything the site remembers to a file and loads that file where it is wanted.
+function saveFile() {
+  const data = {};
+  try {
+    const keys = Array.from({ length: localStorage.length }, (_, i) => localStorage.key(i)).filter((key) => key.startsWith('arcade:')).sort();
+    for (const key of keys) data[key] = localStorage.getItem(key);
+  } catch { /* nothing can be read: there is nothing to save then */ }
+  const count = Object.keys(data).length;
+  if (!count) { $('bk-msg').textContent = 'Nothing has been saved yet: play something first.'; return; }
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([JSON.stringify({ app: 'hellgames', version: VERSION, saved: new Date().toISOString(), data }, null, 1)], { type: 'application/json' }));
+  link.download = `hellgames-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.append(link); link.click(); link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 10000);
+  $('bk-msg').textContent = `Saved ${count} ${count === 1 ? 'entry' : 'entries'} to ${link.download}.`;
+}
+async function loadFile(file) {
+  let count = 0;
+  try {
+    const { app, data } = JSON.parse(await file.text());
+    const entries = Object.entries(data);
+    if (app !== 'hellgames' || entries.length > 5000 || !entries.every(([key, value]) => key.startsWith('arcade:') && typeof value === 'string' && value.length < 500000)) throw new Error('not a file of this site');
+    for (const [key, value] of entries) { localStorage.setItem(key, value); count++; }
+  } catch {
+    $('bk-msg').textContent = count ? 'The browser would not take all of it: some entries are missing.' : 'That is not a file saved from hellgames. Nothing was changed.';
+    return;
+  }
+  $('bk-msg').textContent = `Loaded ${count} ${count === 1 ? 'entry' : 'entries'}. The scores below are the ones from the file.`;
+  if (!current) renderHome();
+}
+$('bk-save').addEventListener('click', saveFile);
+$('bk-load').addEventListener('click', () => $('bk-file').click());
+$('bk-file').addEventListener('change', (e) => { const [file] = e.target.files; e.target.value = ''; if (file) loadFile(file); });
 
 window.addEventListener('hashchange', route);
 $('version').textContent = 'v' + VERSION;

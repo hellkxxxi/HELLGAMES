@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>hellgames by hellkai</title>
-<meta name="description" content="Free browser mini-games you can play instantly: Aim Trainer, Key Mania, Circles of Hell, Helltype, Hellword, Helltris, Hell-Man, Helly Bird, Mahjong, Sudoku, slots and dice for play money, a beat maker, a sandbox and more.">
+<meta name="description" content="Free browser mini-games you can play instantly: Aim Trainer, Key Mania, Circles of Hell, Helltype, Hellword, Helltris, Hell-Man, Helly Bird, Hell Run, chess, Durak, Mahjong, match three, slots and blackjack for play money, a beat maker, a sandbox and more.">
 <meta name="theme-color" content="#0a0606">
 <link rel="canonical" href="https://hellkxxxi.github.io/HELLGAMES/">
 
@@ -13,12 +13,12 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="hellgames">
 <meta property="og:title" content="hellgames by hellkai">
-<meta property="og:description" content="Thirty-seven free mini-games that start in one click: aim trainer, rhythm, word games, puzzles, arcade and a play-money casino. No installs, no ads, no sign-up.">
+<meta property="og:description" content="Forty-one free mini-games that start in one click: aim and reflex trainers, rhythm games, chess and cards, word games, puzzles, arcade and a play-money casino. No installs, no ads, no sign-up.">
 <meta property="og:url" content="https://hellkxxxi.github.io/HELLGAMES/">
 <meta property="og:image" content="https://hellkxxxi.github.io/HELLGAMES/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="hellgames by hellkai: thirty-seven free browser mini-games">
+<meta property="og:image:alt" content="hellgames by hellkai: forty-one free browser mini-games">
 <meta name="twitter:card" content="summary_large_image">
 
 <link rel="stylesheet" href="styles.css">
@@ -59,6 +59,13 @@
       <p class="muted mt-1 text-sm">Quick rounds that work with a keyboard or touch. Your best scores are saved on this device.</p>
       <div id="cats" class="cats" role="group" aria-label="Kinds of games"></div>
       <div id="grid" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+      <div class="backup">
+        <span>Your scores are kept in this browser only.</span>
+        <button id="bk-save"><i data-lucide="download"></i>Save them to a file</button>
+        <button id="bk-load"><i data-lucide="upload"></i>Load a saved file</button>
+        <input type="file" id="bk-file" accept="application/json,.json" hidden>
+        <span id="bk-msg" role="status"></span>
+      </div>
       <footer class="site-footer">
         <span>hellgames <span id="version"></span></span>
         <a href="https://github.com/hellkxxxi/HELLGAMES" target="_blank" rel="noopener"><i data-lucide="code-xml"></i>Source code on GitHub</a>

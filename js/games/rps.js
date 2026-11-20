@@ -38,7 +38,7 @@ export function createMind(rnd = Math.random) {
 }
 
 export default {
-  id: 'rps', name: 'Rock Paper Scissors', icon: 'scissors', color: '#f59e0b', tag: 'Skill', since: '1.1',
+  id: 'rps', name: 'Rock Paper Scissors', icon: 'scissors', color: '#f59e0b', tag: 'Tabletop', since: '1.1',
   desc: 'Rock, paper, scissors against the devil. He learns your habits, so do not have any. Wins in a row count.',
   help: 'Click a hand, or press 1, 2, 3 or R, P, S · rock beats scissors, scissors beat paper, paper beats rock · a draw keeps the streak',
   scoreLabel: 'Streak',

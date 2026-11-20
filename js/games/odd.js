@@ -58,7 +58,7 @@ export default {
       level = 0; slips = 0; left = SECONDS; next();
       bar.style.width = '100%'; api.score(0); api.status('The clock starts with your first tile');
     }
-    function begin() { running = true; last = performance.now(); ticker = setInterval(tick, 100); }
+    function begin() { running = true; last = performance.now(); ticker = setInterval(tick, 100); tick(); }
     function end() {
       running = false; over = true; clearInterval(ticker);
       api.finish(level, { endTitle: 'Time is up', text: `${level} found${slips ? ` · ${slips} wrong` : ', not one wrong'}` });

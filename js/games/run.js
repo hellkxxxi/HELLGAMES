@@ -5,7 +5,7 @@ import { fitCanvas, loop, noScroll } from '../util.js';
 // height 0 and up is positive. An obstacle is a box: x and w along the ground, y and h above it.
 export const WORLD = 440;
 export const DEVIL = { x: 56, w: 30, h: 46, low: 24 }; // where the devil runs, how wide and tall it is, and how tall when it ducks
-const GRAVITY = 2600, JUMP = 800;                      // a jump is 123 units high and lasts 0.62 s
+const GRAVITY = 2600, JUMP = 760;                      // a jump is 111 units high and lasts 0.58 s
 const START_SPEED = 300, TOP_SPEED = 720, SPEED_UP = 7; // units a second, and how much is added every second
 const BUFFER = 0.12;                                   // a jump asked for this long before landing still happens
 export const KINDS = {

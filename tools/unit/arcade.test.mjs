@@ -32,7 +32,7 @@ test('Hell Run: the course can always be run', () => {
       runBot(run); run.step(1 / 120);
       for (const o of run.obstacles) kinds.add(o.kind);
       assert.ok(run.speed >= speed && run.speed <= 720, 'it only gets faster, up to a point'); speed = run.speed;
-      assert.ok(run.y >= 0 && run.y < 130, 'the devil stays between the ground and the top of its jump');
+      assert.ok(run.y >= 0 && run.y < 116, 'the devil stays between the ground and the top of its jump');
     }
     assert.ok(!run.dead, `seed ${seed}: a player who jumps and ducks in time is still running after two and a half minutes (${run.hit?.kind} at ${run.score})`);
     assert.deepEqual([...kinds].sort(), Object.keys(KINDS).sort(), `seed ${seed}: every kind of obstacle turned up`);
@@ -53,7 +53,7 @@ test('Hell Run: what the devil has to do about each obstacle', () => {
   assert.equal(meet('low', (run, o) => { if (close(run, o)) run.jump(); }), true, 'and so does a jump over it');
   assert.equal(meet('high', () => {}), true, 'a high fireball passes over a devil that keeps running');
   assert.equal(meet('high', (run, o) => { if (o.x - (DEVIL.x + DEVIL.w) <= run.speed * 0.08) run.jump(); }), false, 'but not over one that jumps up into it');
-  assert.equal(meet('high', (run, o) => { if (o.x - (DEVIL.x + DEVIL.w) <= run.speed * 0.3) run.jump(); }), true, 'a jump at its very top goes over even that one');
+  assert.equal(meet('high', (run, o) => { if (o.x - (DEVIL.x + DEVIL.w) <= run.speed * 0.2) run.jump(); }), true, 'a jump timed to the tenth of a second goes over even that one');
 });
 
 test('Hell Run: a run without a player, and the jump itself', () => {
@@ -68,7 +68,8 @@ test('Hell Run: a run without a player, and the jump itself', () => {
   run.jump();
   let top = 0, air = 0;
   for (let k = 0; k < 200; k++) { run.step(1 / 240); top = Math.max(top, run.y); if (run.y > 0) air += 1 / 240; }
-  assert.ok(top > 115 && top < 128 && air > 0.58 && air < 0.65, `a jump is about 123 units high and lasts about 0.62 s (${top.toFixed(0)}, ${air.toFixed(2)} s)`);
+  assert.ok(top > 105 && top < 116 && air > 0.55 && air < 0.62, `a jump is about 111 units high and lasts about 0.58 s (${top.toFixed(0)}, ${air.toFixed(2)} s)`);
+  assert.ok(top + DEVIL.h < 170, 'at the top of its jump the devil is still inside a picture half as high as it is wide');
   run.jump(); run.step(1 / 240); run.duck(true);
   let quick = 0;
   for (let k = 0; k < 240 && (run.y > 0 || k < 2); k++) { run.step(1 / 240); quick += 1 / 240; }
